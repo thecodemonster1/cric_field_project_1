@@ -61,13 +61,13 @@ class WagonWheelPainter extends CustomPainter {
 
     // Draw grass background
     final groundPaint = Paint()
-      ..color = const Color.fromARGB(255, 76, 175, 80)
+      ..color = const Color.fromARGB(255, 69, 168, 73)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, groundPaint);
 
     // Draw 30-yard circle (approximately 0.6 of the boundary radius)
     final thirtyYardPaint = Paint()
-      ..color = const Color.fromARGB(255, 0, 0, 0)
+      ..color = const Color.fromARGB(255, 255, 255, 255)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
@@ -75,7 +75,7 @@ class WagonWheelPainter extends CustomPainter {
 
     // Draw boundary line
     final boundaryPaint = Paint()
-      ..color = const Color.fromARGB(255, 0, 0, 0)
+      ..color = const Color.fromARGB(255, 195, 195, 195)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
     canvas.drawCircle(center, radius, boundaryPaint);
@@ -95,7 +95,7 @@ class WagonWheelPainter extends CustomPainter {
 
     // Draw fielder positions
     final fielderPaint = Paint()
-      ..color = const Color.fromARGB(255, 0, 0, 0)
+      ..color = const Color.fromARGB(255, 255, 255, 255)
       ..style = PaintingStyle.fill;
 
     // Define fielder positions (normalized coordinates from 0 to 1)
@@ -151,7 +151,7 @@ class WagonWheelPainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: fielder['name'] as String,
         style: const TextStyle(
-          color: Colors.white,
+          color: Color.fromARGB(255, 0, 0, 0),
           fontSize: 8,
           fontWeight: FontWeight.bold,
         ),
@@ -185,182 +185,3 @@ class WagonWheelPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
-
-
-
-
-
-
-
-
-// import 'dart:math';
-// import 'package:flutter/material.dart';
-// import 'package:fl_chart/fl_chart.dart'; // Add this package to pubspec.yaml
-
-// class ShotData {
-//   final String zone;
-//   final int frequency;
-//   final double successRate;
-  
-//   ShotData(this.zone, this.frequency, this.successRate);
-// }
-
-// class WagonWheelPage extends StatefulWidget {
-//   const WagonWheelPage({super.key});
-
-//   @override
-//   State<WagonWheelPage> createState() => _WagonWheelPageState();
-// }
-
-// class _WagonWheelPageState extends State<WagonWheelPage> {
-//   String selectedZone = '';
-//   final List<ShotData> mockData = [
-//     ShotData('Fine Leg', 15, 0.8),
-//     ShotData('Square Leg', 20, 0.75),
-//     ShotData('Mid Wicket', 25, 0.85),
-//     ShotData('Mid On', 10, 0.6),
-//     ShotData('Cover', 30, 0.9),
-//     ShotData('Third Man', 12, 0.7),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Shot Analysis'),
-//         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-//       ),
-//       body: Column(
-//         children: [
-//           Expanded(
-//             flex: 2,
-//             child: GestureDetector(
-//               onTapDown: (details) {
-//                 // Calculate which zone was tapped
-//                 final RenderBox box = context.findRenderObject() as RenderBox;
-//                 final Offset localPosition = box.globalToLocal(details.globalPosition);
-//                 final String zone = _calculateZone(localPosition);
-//                 setState(() {
-//                   selectedZone = zone;
-//                 });
-//               },
-//               child: CustomPaint(
-//                 size: const Size(300, 300),
-//                 painter: WagonWheelPainter(selectedZone: selectedZone),
-//               ),
-//             ),
-//           ),
-//           if (selectedZone.isNotEmpty)
-//             Expanded(
-//               child: Column(
-//                 children: [
-//                   Text('Zone: $selectedZone',
-//                       style: Theme.of(context).textTheme.headlineSmall),
-//                   const SizedBox(height: 10),
-//                   SizedBox(
-//                     height: 200,
-//                     child: BarChart(
-//                       BarChartData(
-//                         alignment: BarChartAlignment.spaceAround,
-//                         maxY: 100,
-//                         barGroups: [
-//                           BarChartGroupData(
-//                             x: 0,
-//                             barRods: [
-//                               BarChartRodData(
-//                                 toY: _getZoneData(selectedZone).successRate * 100,
-//                                 color: Colors.blue,
-//                               ),
-//                             ],
-//                           ),
-//                         ],
-//                         titlesData: FlTitlesData(
-//                           bottomTitles: AxisTitles(
-//                             sideTitles: SideTitles(showTitles: false),
-//                           ),
-//                           leftTitles: AxisTitles(
-//                             sideTitles: SideTitles(
-//                               showTitles: true,
-//                               getTitlesWidget: (value, meta) {
-//                                 return Text('${value.toInt()}%');
-//                               },
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   Text(
-//                     'Shot Frequency: ${_getZoneData(selectedZone).frequency}',
-//                     style: Theme.of(context).textTheme.bodyLarge,
-//                   ),
-//                   Text(
-//                     'Success Rate: ${(_getZoneData(selectedZone).successRate * 100).toInt()}%',
-//                     style: Theme.of(context).textTheme.bodyLarge,
-//                   ),
-//                 ],
-//               ),
-//             ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   ShotData _getZoneData(String zone) {
-//     return mockData.firstWhere(
-//       (data) => data.zone == zone,
-//       orElse: () => ShotData(zone, 0, 0),
-//     );
-//   }
-
-//   String _calculateZone(Offset position) {
-//     // Add logic to determine zone based on tap position
-//     // This is a simplified example
-//     final zones = ['Fine Leg', 'Square Leg', 'Mid Wicket', 
-//                   'Mid On', 'Cover', 'Third Man'];
-//     return zones[Random().nextInt(zones.length)];
-//   }
-// }
-
-// class WagonWheelPainter extends CustomPainter {
-//   final String selectedZone;
-
-//   WagonWheelPainter({required this.selectedZone});
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final Paint paint = Paint()
-//       ..color = Colors.green
-//       ..style = PaintingStyle.stroke
-//       ..strokeWidth = 2.0;
-
-//     final center = Offset(size.width / 2, size.height / 2);
-//     final radius = size.width / 2;
-
-//     // Draw cricket field boundary
-//     canvas.drawCircle(center, radius, paint);
-
-//     // Draw zones with labels
-//     for (var i = 0; i < 6; i++) {
-//       final angle = (i * 60) * pi / 180;
-//       final dx = radius * cos(angle);
-//       final dy = radius * sin(angle);
-      
-//       // Draw zone lines
-//       canvas.drawLine(
-//         center,
-//         Offset(center.dx + dx, center.dy + dy),
-//         paint,
-//       );
-
-//       // Highlight selected zone
-//       if (selectedZone.isNotEmpty) {
-//         // Add highlighting logic here
-//       }
-//     }
-//   }
-
-//   @override
-//   bool shouldRepaint(WagonWheelPainter oldDelegate) => 
-//       oldDelegate.selectedZone != selectedZone;
-// }
