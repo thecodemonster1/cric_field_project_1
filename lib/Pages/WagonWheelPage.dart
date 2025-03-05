@@ -135,6 +135,7 @@ class WagonWheelPainter extends CustomPainter {
     // Draw fielders with smaller text for better visibility
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
     );
 
     for (var fielder in fielderPositions) {
@@ -146,20 +147,20 @@ class WagonWheelPainter extends CustomPainter {
       // Draw fielder circle
       canvas.drawCircle(position, 6, fielderPaint);
 
-      // // Draw fielder label with smaller font
-      // textPainter.text = TextSpan(
-      //   text: fielder['name'] as String,
-      //   style: const TextStyle(
-      //     color: Colors.white,
-      //     fontSize: 8,
-      //     fontWeight: FontWeight.bold,
-      //   ),
-      // );
-      // textPainter.layout();
-      // textPainter.paint(
-      //   canvas,
-      //   position.translate(-textPainter.width / 2, 8),
-      // );
+      // Draw fielder label with smaller font
+      textPainter.text = TextSpan(
+        text: fielder['name'] as String,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 8,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        position.translate(-textPainter.width / 2, 8),
+      );
     }
 
     // // Draw zone lines
