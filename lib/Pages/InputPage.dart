@@ -10,154 +10,41 @@ class InputPage extends StatefulWidget {
 
 class _InputPageState extends State<InputPage> {
   String? selectedBatsman = 'Babar Azam';
-  String? selectedGround;
-  String? selectedShot = 'Cover Drive';
-  String? selectedBowlingStyle = 'Right Arm Fast';
-  String? selectedBowler = 'James Anderson';
+  String? selectedOverRange = 'Powerplay';
+  String? selectedPitchType = 'Batting-Friendly';
+  String? selectedBowlerVariation = 'Pace';
 
-  final Map<String, List<String>> batsmanGrounds = {
-    'Babar Azam': [
-      'Karachi',
-      'Lahore',
-      'Rawalpindi',
-      'Dubai',
-      'Abu Dhabi',
-      'Melbourne',
-      'Sydney',
-      'Lords',
-    ],
-    'Jos Buttler': [
-      'Lords',
-      'The Oval',
-      'Old Trafford',
-      'Edgbaston',
-      'MCG',
-      'SCG',
-      'Adelaide',
-    ],
-  };
+  final List<String> batsmen = ['Babar Azam', 'Jos Buttler'];
 
-  final List<String> shots = [
-    'Cover Drive',
-    'Straight Drive',
-    'Square Cut',
-    'Pull Shot',
-    'Hook Shot',
-    'Leg Glance',
-    'Sweep',
-    'Reverse Sweep',
-    'Scoop',
-    'On Drive',
-    'Flick',
+  final List<String> overRanges = ['Powerplay', 'Middle', 'Death'];
+
+  final List<String> pitchTypes = [
+    'Batting-Friendly',
+    'Bowler-Friendly',
+    'Neutral'
   ];
 
-  final List<String> bowlingStyles = [
-    'Right Arm Fast',
-    'Right Arm Medium',
-    'Left Arm Fast',
-    'Left Arm Medium',
-    'Off Spin',
-    'Leg Spin',
-    'Left Arm Spin',
-  ];
-
-  final Map<String, List<String>> styleBowlers = {
-    'Right Arm Fast': ['James Anderson', 'Pat Cummins', 'Mohammed Shami'],
-    'Right Arm Medium': ['Harshal Patel', 'Bhuvneshwar Kumar'],
-    'Left Arm Fast': ['Mitchell Starc', 'Trent Boult', 'Shaheen Afridi'],
-    'Left Arm Medium': ['Sam Curran', 'Jason Behrendorff'],
-    'Off Spin': ['R Ashwin', 'Nathan Lyon', 'Moeen Ali'],
-    'Leg Spin': ['Rashid Khan', 'Adam Zampa', 'Yuzvendra Chahal'],
-    'Left Arm Spin': ['Mitchell Santner', 'Axar Patel'],
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    selectedGround = batsmanGrounds[selectedBatsman]?.first;
-    selectedBowler = styleBowlers[selectedBowlingStyle]?.first;
-  }
+  final List<String> bowlerVariations = ['Pace', 'Spin'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Match Details'),
+        title: const Text('Cricket Analysis Input'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            DropdownButtonFormField<String>(
-              value: selectedBatsman,
-              decoration: const InputDecoration(
-                labelText: 'Select Batsman',
-                border: OutlineInputBorder(),
-              ),
-              items: batsmanGrounds.keys.map((batsman) {
-                return DropdownMenuItem(value: batsman, child: Text(batsman));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedBatsman = value;
-                  selectedGround = batsmanGrounds[value]?.first;
-                });
-              },
-            ),
+            _buildDropdown('Batsman', selectedBatsman, batsmen),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedGround,
-              decoration: const InputDecoration(
-                labelText: 'Select Ground',
-                border: OutlineInputBorder(),
-              ),
-              items: batsmanGrounds[selectedBatsman]?.map((ground) {
-                return DropdownMenuItem(value: ground, child: Text(ground));
-              }).toList(),
-              onChanged: (value) => setState(() => selectedGround = value),
-            ),
+            _buildDropdown('Over Range', selectedOverRange, overRanges),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedShot,
-              decoration: const InputDecoration(
-                labelText: 'Select Shot',
-                border: OutlineInputBorder(),
-              ),
-              items: shots.map((shot) {
-                return DropdownMenuItem(value: shot, child: Text(shot));
-              }).toList(),
-              onChanged: (value) => setState(() => selectedShot = value),
-            ),
+            _buildDropdown('Pitch Type', selectedPitchType, pitchTypes),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedBowlingStyle,
-              decoration: const InputDecoration(
-                labelText: 'Select Bowling Style',
-                border: OutlineInputBorder(),
-              ),
-              items: bowlingStyles.map((style) {
-                return DropdownMenuItem(value: style, child: Text(style));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedBowlingStyle = value;
-                  selectedBowler = styleBowlers[value]?.first;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedBowler,
-              decoration: const InputDecoration(
-                labelText: 'Select Bowler',
-                border: OutlineInputBorder(),
-              ),
-              items: styleBowlers[selectedBowlingStyle]?.map((bowler) {
-                return DropdownMenuItem(value: bowler, child: Text(bowler));
-              }).toList(),
-              onChanged: (value) => setState(() => selectedBowler = value),
-            ),
+            _buildDropdown(
+                'Bowler Variation', selectedBowlerVariation, bowlerVariations),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -169,18 +56,46 @@ class _InputPageState extends State<InputPage> {
                   '/wagonWheel',
                   arguments: {
                     'batsman': selectedBatsman,
-                    'ground': selectedGround,
-                    'shot': selectedShot,
-                    'bowlingStyle': selectedBowlingStyle,
-                    'bowler': selectedBowler,
+                    'overRange': selectedOverRange,
+                    'pitchType': selectedPitchType,
+                    'bowlerVariation': selectedBowlerVariation,
                   },
                 );
               },
-              child: const Text('Continue to Shot Analysis'),
+              child: const Text('Continue to Analysis'),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdown(String label, String? value, List<String> items) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      items: items.map((item) {
+        return DropdownMenuItem(value: item, child: Text(item));
+      }).toList(),
+      onChanged: (newValue) => setState(() {
+        switch (label) {
+          case 'Batsman':
+            selectedBatsman = newValue;
+            break;
+          case 'Over Range':
+            selectedOverRange = newValue;
+            break;
+          case 'Pitch Type':
+            selectedPitchType = newValue;
+            break;
+          case 'Bowler Variation':
+            selectedBowlerVariation = newValue;
+            break;
+        }
+      }),
     );
   }
 }
