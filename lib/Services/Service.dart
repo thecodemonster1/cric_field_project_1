@@ -5,7 +5,10 @@ class FieldPlacementService {
 
   static Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('assets/your_model.tflite');
+      print('Loading TFLite model...');
+      _interpreter =
+          await Interpreter.fromAsset('lib/Assets/cricfield_model.tflite');
+      print('Model loaded successfully');
     } catch (e) {
       print('Error loading model: $e');
     }
@@ -18,10 +21,16 @@ class FieldPlacementService {
     required String bowlerVariation,
   }) {
     if (_interpreter == null) {
-      return List.filled(13, false); // Default all disabled
+      print('Interpreter is null - model not loaded');
+      return List.filled(13, false);
     }
 
-    // Prepare input data
+    print('Making prediction with inputs:');
+    print('Batsman: $batsman');
+    print('Over Range: $overRange');
+    print('Pitch Type: $pitchType');
+    print('Bowler Variation: $bowlerVariation');
+
     var input = _prepareInputData(
       batsman: batsman,
       overRange: overRange,
@@ -29,13 +38,10 @@ class FieldPlacementService {
       bowlerVariation: bowlerVariation,
     );
 
-    // Output buffer
     var output = List.filled(13, 0.0);
-
-    // Run inference
     _interpreter!.run(input, output);
 
-    // Convert probabilities to boolean decisions (threshold at 0.5)
+    print('Model output: $output');
     return output.map((prob) => prob > 0.5).toList();
   }
 
