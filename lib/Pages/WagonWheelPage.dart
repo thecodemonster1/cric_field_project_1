@@ -1,8 +1,9 @@
+import 'package:cric_field_project_1/Services/Service.dart';
 import 'package:flutter/material.dart';
-import 'dart:math' show pi;
 
 class WagonWheelPage extends StatefulWidget {
-  const WagonWheelPage({super.key});
+  final Map<String, dynamic> inputData;
+  const WagonWheelPage({super.key, required this.inputData});
 
   @override
   State<WagonWheelPage> createState() => _WagonWheelPageState();
@@ -19,7 +20,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     'Mid-on': true,
     'Third Man': true,
     'Fine Leg': true,
-    'Deep Point': false,
+    'Deep Point': true,
     'Deep Square Leg': false,
     'Deep Cover': false,
     'Deep Mid-Wicket': false,
@@ -28,6 +29,36 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
   };
 
   int activeFielderCount = 9; // Track number of active fielders
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFielders();
+  }
+
+  void _initializeFielders() async {
+    await FieldPlacementService.loadModel();
+
+    final predictions = FieldPlacementService.predictFieldPlacements(
+      batsman: widget.inputData['batsman'],
+      overRange: widget.inputData['overRange'],
+      pitchType: widget.inputData['pitchType'],
+      bowlerVariation: widget.inputData['bowlerVariation'],
+    );
+
+    setState(() {
+      // Update fielder positions based on model predictions
+      var fielderNames = enabledFielders.keys.toList();
+      for (int i = 0; i < predictions.length; i++) {
+        if (i < fielderNames.length) {
+          enabledFielders[fielderNames[i]] = predictions[i];
+        }
+      }
+
+      // Update active fielder count
+      activeFielderCount = enabledFielders.values.where((v) => v).length;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +245,7 @@ class WagonWheelPainter extends CustomPainter {
       final isEnabled = isFixed || enabledFielders[fielder['name']] == true;
 
       final fielderPaint = Paint()
+        // ignore: deprecated_member_use
         ..color = isEnabled ? Colors.white : Colors.grey.withOpacity(0.0)
         ..style = PaintingStyle.fill;
 
@@ -225,6 +257,7 @@ class WagonWheelPainter extends CustomPainter {
         text: TextSpan(
           text: fielder['name'] as String,
           style: TextStyle(
+            // ignore: deprecated_member_use
             color: isEnabled ? Colors.black : Colors.grey.withOpacity(0.0),
             fontSize: 8,
             fontWeight: FontWeight.bold,
