@@ -21,7 +21,11 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const InputPage(),
-        '/wagonWheel': (context) => const WagonWheelPage(),
+        '/wagonWheel': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          return WagonWheelPage(inputData: args ?? {});
+        },
       },
     );
   }
