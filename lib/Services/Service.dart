@@ -39,6 +39,7 @@ class FieldPlacementService {
     );
 
     var output = List.filled(13, 0.0);
+    print('working...');
     _interpreter!.run(input, output);
 
     print('Model output: $output');
