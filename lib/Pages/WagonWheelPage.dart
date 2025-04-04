@@ -20,7 +20,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     'Mid-on': true,
     'Third Man': true,
     'Fine Leg': true,
-    'Deep Point': true,
+    'Deep Point': false,
     'Deep Square Leg': false,
     'Deep Cover': false,
     'Deep Mid-Wicket': false,
@@ -59,6 +59,8 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
       activeFielderCount = enabledFielders.values.where((v) => v).length;
     });
   }
+
+  // int activeFielderCountX = activeFielderCount/9;
 
   @override
   Widget build(BuildContext context) {
