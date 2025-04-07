@@ -11,15 +11,15 @@ class WagonWheelPage extends StatefulWidget {
 
 class _WagonWheelPageState extends State<WagonWheelPage> {
   final Map<String, bool> enabledFielders = {
-    'Slip': true,
-    'Point': true,
-    'Square Leg': true,
-    'Cover': true,
-    'Mid-wicket': true,
-    'Mid-off': true,
-    'Mid-on': true,
-    'Third Man': true,
-    'Fine Leg': true,
+    'Slip': false,
+    'Point': false,
+    'Square Leg': false,
+    'Cover': false,
+    'Mid-wicket': false,
+    'Mid-off': false,
+    'Mid-on': false,
+    'Third Man': false,
+    'Fine Leg': false,
     'Deep Point': false,
     'Deep Square Leg': false,
     'Deep Cover': false,
@@ -28,7 +28,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     'Long-On': false,
   };
 
-  int activeFielderCount = 9; // Track number of active fielders
+  int activeFielderCount = 0; // Track number of active fielders
 
   @override
   void initState() {
@@ -39,6 +39,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
   void _initializeFielders() async {
     await FieldPlacementService.loadModel();
 
+    // Get predictions from the model
     final predictions = FieldPlacementService.predictFieldPlacements(
       batsman: widget.inputData['batsman'],
       overRange: widget.inputData['overRange'],
@@ -46,21 +47,37 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
       bowlerVariation: widget.inputData['bowlerVariation'],
     );
 
+    // Print raw predictions
+    print('Raw model predictions (indices): $predictions');
+
+    // Map predictions to fielding positions
+    final predictedPositions = predictions
+        .map((index) =>
+            FieldPlacementService.fieldingPositionMap[index] ?? 'Unknown')
+        .toList();
+
+    // Print mapped fielding positions
+    print('Predicted fielding positions: $predictedPositions');
+
     setState(() {
-      // Update fielder positions based on model predictions
-      var fielderNames = enabledFielders.keys.toList();
-      for (int i = 0; i < predictions.length; i++) {
-        if (i < fielderNames.length) {
-          enabledFielders[fielderNames[i]] = predictions[i];
-        }
+      // Clear existing positions
+      enabledFielders.clear();
+
+      // Add standard fixed fielders
+      enabledFielders['Wicket Keeper'] = true;
+      enabledFielders['Bowler'] = true;
+
+      // Enable top 9 predicted fielding positions
+      for (var index in predictions) {
+        String position =
+            FieldPlacementService.fieldingPositionMap[index] ?? 'Unknown';
+        enabledFielders[position] = true;
       }
 
-      // Update active fielder count
-      activeFielderCount = enabledFielders.values.where((v) => v).length;
+      // Update active fielder count (excluding bowler and wicket keeper)
+      activeFielderCount = enabledFielders.values.where((v) => v).length - 2;
     });
   }
-
-  // int activeFielderCountX = activeFielderCount/9;
 
   @override
   Widget build(BuildContext context) {
@@ -174,66 +191,21 @@ class WagonWheelPainter extends CustomPainter {
 
     // Define fielder positions
     final fielderPositions = [
-      // Close-in fielders
-      {'name': 'Wicket Keeper', 'x': 0.5, 'y': 0.33, 'fixed': true},
-      {'name': 'Bowler', 'x': 0.5, 'y': 0.65, 'fixed': true},
-      {'name': 'Slip', 'x': 0.38, 'y': 0.3, 'fixed': false}, // Slip
-      {'name': 'Point', 'x': 0.25, 'y': 0.4, 'fixed': false}, // Point
-      {
-        'name': 'Square Leg',
-        'x': (1 - 0.25),
-        'y': 0.4,
-        'fixed': false
-      }, // Square leg
-      {'name': 'Cover', 'x': 0.25, 'y': 0.57, 'fixed': false}, // Cover
-      {
-        'name': 'Mid-wicket',
-        'x': (1 - 0.25),
-        'y': 0.57,
-        'fixed': false
-      }, // Mid-wicket
-      {'name': 'Mid-off', 'x': 0.35, 'y': 0.7, 'fixed': false}, // Mid-off
-      {'name': 'Mid-on', 'x': (1 - 0.35), 'y': 0.7, 'fixed': false}, // Mid-on
-
-      // Deep fielders
-      {'name': 'Third Man', 'x': 0.25, 'y': 0.12, 'fixed': false}, // Third Man
-      {
-        'name': 'Fine Leg',
-        'x': (1 - 0.25),
-        'y': 0.12,
-        'fixed': false
-      }, // Fine leg
-      {
-        'name': 'Deep \nPoint',
-        'x': 0.05,
-        'y': 0.5,
-        'fixed': false
-      }, // Deep Point
-      {
-        'name': 'Deep \nSquare \nLeg',
-        'x': (1 - 0.05),
-        'y': 0.5,
-        'fixed': false
-      }, // Deep Square Leg
-      {
-        'name': 'Deep \nCover',
-        'x': 0.18,
-        'y': 0.75,
-        'fixed': false
-      }, // Deep Cover
-      {
-        'name': 'Deep \nMid-\nWicket',
-        'x': (1 - 0.18),
-        'y': 0.75,
-        'fixed': false
-      }, // Deep Mid-Wicket
-      {'name': 'Long-Off', 'x': 0.43, 'y': 0.93, 'fixed': false}, // Long-Off
-      {
-        'name': 'Long-On',
-        'x': (1 - 0.43),
-        'y': 0.93,
-        'fixed': false
-      }, // Long-On
+      {'name': 'Slip', 'x': 0.38, 'y': 0.3},
+      {'name': 'Point', 'x': 0.25, 'y': 0.4},
+      {'name': 'Square Leg', 'x': (1 - 0.25), 'y': 0.4},
+      {'name': 'Cover', 'x': 0.25, 'y': 0.57},
+      {'name': 'Mid-wicket', 'x': (1 - 0.25), 'y': 0.57},
+      {'name': 'Mid-off', 'x': 0.35, 'y': 0.7},
+      {'name': 'Mid-on', 'x': (1 - 0.35), 'y': 0.7},
+      {'name': 'Third Man', 'x': 0.25, 'y': 0.12},
+      {'name': 'Fine Leg', 'x': (1 - 0.25), 'y': 0.12},
+      {'name': 'Deep Point', 'x': 0.05, 'y': 0.5},
+      {'name': 'Deep Square Leg', 'x': (1 - 0.05), 'y': 0.5},
+      {'name': 'Deep Cover', 'x': 0.18, 'y': 0.75},
+      {'name': 'Deep Mid-Wicket', 'x': (1 - 0.18), 'y': 0.75},
+      {'name': 'Long-Off', 'x': 0.43, 'y': 0.93},
+      {'name': 'Long-On', 'x': (1 - 0.43), 'y': 0.93},
     ];
 
     // Draw fielders
@@ -243,12 +215,10 @@ class WagonWheelPainter extends CustomPainter {
         (fielder['y']! as double) * size.height,
       );
 
-      final isFixed = fielder['fixed'] as bool;
-      final isEnabled = isFixed || enabledFielders[fielder['name']] == true;
+      final isEnabled = enabledFielders[fielder['name']] ?? false;
 
       final fielderPaint = Paint()
-        // ignore: deprecated_member_use
-        ..color = isEnabled ? Colors.white : Colors.grey.withOpacity(0.0)
+        ..color = isEnabled ? Colors.white : Colors.grey.withOpacity(0.5)
         ..style = PaintingStyle.fill;
 
       // Draw fielder circle
@@ -259,8 +229,7 @@ class WagonWheelPainter extends CustomPainter {
         text: TextSpan(
           text: fielder['name'] as String,
           style: TextStyle(
-            // ignore: deprecated_member_use
-            color: isEnabled ? Colors.black : Colors.grey.withOpacity(0.0),
+            color: isEnabled ? Colors.black : Colors.grey,
             fontSize: 8,
             fontWeight: FontWeight.bold,
           ),
