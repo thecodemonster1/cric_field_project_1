@@ -27,7 +27,7 @@ class FieldPlacementService {
     try {
       print('Loading TFLite model...');
       _interpreter =
-          await Interpreter.fromAsset('lib/Assets/cricfield_model.tflite');
+          await Interpreter.fromAsset('assets/model/cricfield_model.tflite');
       print('Model loaded successfully');
     } catch (e) {
       print('Error loading model: $e');
@@ -87,26 +87,23 @@ class FieldPlacementService {
     required String pitchType,
     required String bowlerVariation,
   }) {
-    // Convert categorical variables to numerical format as in your Python code
     List<double> input = [];
 
     // Batsman encoding (0 for Babar Azam, 1 for Jos Buttler)
     input.add(batsman == 'Babar Azam' ? 0.0 : 1.0);
 
     // Over range encoding (One-hot: [Powerplay, Middle, Death])
-    input.add(overRange == 'Powerplay' ? 1.0 : 0.0);
-    input.add(overRange == 'Middle' ? 1.0 : 0.0);
-    input.add(overRange == 'Death' ? 1.0 : 0.0);
+    input.add(
+        overRange == 'Powerplay' ? 0.0 : (overRange == 'Middle' ? 1.0 : 2.0));
 
-    // Pitch type encoding (One-hot: [Batting-Friendly, Bowler-Friendly, Neutral])
-    input.add(pitchType == 'Batting-Friendly' ? 1.0 : 0.0);
-    input.add(pitchType == 'Bowler-Friendly' ? 1.0 : 0.0);
-    input.add(pitchType == 'Neutral' ? 1.0 : 0.0);
+    // Pitch type encoding (0 for Batting-Friendly, 1 for Bowler-Friendly, 2 for Neutral)
+    input.add(pitchType == 'Batting-Friendly'
+        ? 0.0
+        : (pitchType == 'Bowler-Friendly' ? 1.0 : 2.0));
 
     // Bowler variation encoding (0 for Pace, 1 for Spin)
     input.add(bowlerVariation == 'Pace' ? 0.0 : 1.0);
 
-    print('Prepared input: $input');
     return input;
   }
 }
