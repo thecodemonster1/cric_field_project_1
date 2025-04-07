@@ -13,7 +13,9 @@ dependencies:
     sdk: flutter
   fl_chart:
   cupertino_icons: ^1.0.8
-  tflite_flutter:
+  # tflite_flutter: ^0.11.0
+  tflite_flutter: ^0.9.5
+  tflite_flutter_helper: ^0.2.0
 
 dev_dependencies:
   flutter_test:
@@ -23,10 +25,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # To add assets to your application, add an assets section, like this:
   assets:
-    - lib/Assets/cricfield_model.tflite
+    - assets/model/cricfield_model.tflite
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
