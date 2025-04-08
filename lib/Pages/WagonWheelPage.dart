@@ -26,6 +26,8 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     'Deep Mid-Wicket': false,
     'Long-Off': false,
     'Long-On': false,
+    'Wicket Keeper': true, // Always enabled
+    'Bowler': true, // Always enabled
   };
 
   int activeFielderCount = 0; // Track number of active fielders
@@ -40,7 +42,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     await FieldPlacementService.loadModel();
 
     // Get predictions from the model
-    final predictions = FieldPlacementService.predictFieldPlacements(
+    final predictions = await FieldPlacementService.predictFieldPlacements(
       batsman: widget.inputData['batsman'],
       overRange: widget.inputData['overRange'],
       pitchType: widget.inputData['pitchType'],
@@ -50,22 +52,14 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     // Print raw predictions
     print('Raw model predictions (indices): $predictions');
 
-    // Map predictions to fielding positions
-    final predictedPositions = predictions
-        .map((index) =>
-            FieldPlacementService.fieldingPositionMap[index] ?? 'Unknown')
-        .toList();
-
-    // Print mapped fielding positions
-    print('Predicted fielding positions: $predictedPositions');
-
     setState(() {
-      // Clear existing positions
-      enabledFielders.clear();
-
-      // Add standard fixed fielders
-      enabledFielders['Wicket Keeper'] = true;
-      enabledFielders['Bowler'] = true;
+      // Clear existing positions except for Wicket Keeper and Bowler
+      enabledFielders.updateAll((key, value) {
+        if (key == 'Wicket Keeper' || key == 'Bowler') {
+          return true; // Always enabled
+        }
+        return false; // Reset others
+      });
 
       // Enable top 9 predicted fielding positions
       for (var index in predictions) {
@@ -112,26 +106,26 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                   ),
                   Expanded(
                     child: ListView(
-                      children: enabledFielders.keys
-                          .where((key) =>
-                              key != 'Wicket Keeper' && key != 'Bowler')
-                          .map((fielder) {
+                      children: enabledFielders.keys.map((fielder) {
                         return CheckboxListTile(
                           title: Text(fielder),
                           value: enabledFielders[fielder],
-                          onChanged: (activeFielderCount < 9 ||
-                                  enabledFielders[fielder] == true)
-                              ? (bool? value) {
-                                  setState(() {
-                                    if (value == true) {
-                                      activeFielderCount++;
-                                    } else {
-                                      activeFielderCount--;
+                          onChanged: (fielder == 'Wicket Keeper' ||
+                                  fielder == 'Bowler')
+                              ? null // Disable toggling for Wicket Keeper and Bowler
+                              : (activeFielderCount < 9 ||
+                                      enabledFielders[fielder] == true)
+                                  ? (bool? value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          activeFielderCount++;
+                                        } else {
+                                          activeFielderCount--;
+                                        }
+                                        enabledFielders[fielder] = value!;
+                                      });
                                     }
-                                    enabledFielders[fielder] = value!;
-                                  });
-                                }
-                              : null,
+                                  : null,
                         );
                       }).toList(),
                     ),
@@ -191,6 +185,7 @@ class WagonWheelPainter extends CustomPainter {
 
     // Define fielder positions
     final fielderPositions = [
+      {'name': 'Wicket Keeper', 'x': 0.5, 'y': 0.3},
       {'name': 'Slip', 'x': 0.38, 'y': 0.3},
       {'name': 'Point', 'x': 0.25, 'y': 0.4},
       {'name': 'Square Leg', 'x': (1 - 0.25), 'y': 0.4},
@@ -206,6 +201,7 @@ class WagonWheelPainter extends CustomPainter {
       {'name': 'Deep Mid-Wicket', 'x': (1 - 0.18), 'y': 0.75},
       {'name': 'Long-Off', 'x': 0.43, 'y': 0.93},
       {'name': 'Long-On', 'x': (1 - 0.43), 'y': 0.93},
+      {'name': 'Bowler', 'x': 0.5, 'y': 0.7},
     ];
 
     // Draw fielders
