@@ -9,93 +9,131 @@ class InputPage extends StatefulWidget {
 }
 
 class _InputPageState extends State<InputPage> {
-  String? selectedBatsman = 'Babar Azam';
-  String? selectedOverRange = 'Powerplay';
-  String? selectedPitchType = 'Batting-Friendly';
-  String? selectedBowlerVariation = 'Pace';
-
-  final List<String> batsmen = ['Babar Azam', 'Jos Buttler'];
-
-  final List<String> overRanges = ['Powerplay', 'Middle', 'Death'];
-
-  final List<String> pitchTypes = [
-    'Batting-Friendly',
-    'Bowler-Friendly',
-    'Neutral'
-  ];
-
-  final List<String> bowlerVariations = ['Pace', 'Spin'];
+  final _formKey = GlobalKey<FormState>();
+  String batsman = 'Babar Azam - Pakistan';
+  String overRange = 'Middle';
+  String pitchType = 'Batting-Friendly';
+  String bowlerVariation = 'Pace';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cricket Analysis Input'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Input Page'),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildDropdown('Batsman', selectedBatsman, batsmen),
-            const SizedBox(height: 16),
-            _buildDropdown('Over Range', selectedOverRange, overRanges),
-            const SizedBox(height: 16),
-            _buildDropdown('Pitch Type', selectedPitchType, pitchTypes),
-            const SizedBox(height: 16),
-            _buildDropdown(
-                'Bowler Variation', selectedBowlerVariation, bowlerVariations),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              DropdownButtonFormField<String>(
+                value: batsman,
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Babar Azam - Pakistan',
+                    child: Text('Babar Azam - Pakistan'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Jos Buttler - England',
+                    child: Text('Jos Buttler - England'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    batsman = value!;
+                  });
+                },
+                decoration: const InputDecoration(labelText: 'Batsman'),
               ),
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  '/wagonWheel',
-                  arguments: {
-                    'batsman': selectedBatsman,
-                    'overRange': selectedOverRange,
-                    'pitchType': selectedPitchType,
-                    'bowlerVariation': selectedBowlerVariation,
-                  },
-                );
-              },
-              child: const Text('Continue to Analysis'),
-            ),
-          ],
+              DropdownButtonFormField<String>(
+                value: overRange,
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Powerplay',
+                    child: Text('Powerplay'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Middle',
+                    child: Text('Middle'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Death',
+                    child: Text('Death'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    overRange = value!;
+                  });
+                },
+                decoration: const InputDecoration(labelText: 'Over Range'),
+              ),
+              DropdownButtonFormField<String>(
+                value: pitchType,
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Batting-Friendly',
+                    child: Text('Batting-Friendly'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Bowler-Friendly',
+                    child: Text('Bowler-Friendly'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Neutral',
+                    child: Text('Neutral'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    pitchType = value!;
+                  });
+                },
+                decoration: const InputDecoration(labelText: 'Pitch Type'),
+              ),
+              DropdownButtonFormField<String>(
+                value: bowlerVariation,
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Pace',
+                    child: Text('Pace'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Spin',
+                    child: Text('Spin'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    bowlerVariation = value!;
+                  });
+                },
+                decoration:
+                    const InputDecoration(labelText: 'Bowler Variation'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.pushNamed(
+                      context,
+                      '/wagonWheel',
+                      arguments: {
+                        'batsman': batsman,
+                        'overRange': overRange,
+                        'pitchType': pitchType,
+                        'bowlerVariation': bowlerVariation,
+                      },
+                    );
+                  }
+                },
+                child: const Text('Analyze'),
+              ),
+            ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDropdown(String label, String? value, List<String> items) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
-      items: items.map((item) {
-        return DropdownMenuItem(value: item, child: Text(item));
-      }).toList(),
-      onChanged: (newValue) => setState(() {
-        switch (label) {
-          case 'Batsman':
-            selectedBatsman = newValue;
-            break;
-          case 'Over Range':
-            selectedOverRange = newValue;
-            break;
-          case 'Pitch Type':
-            selectedPitchType = newValue;
-            break;
-          case 'Bowler Variation':
-            selectedBowlerVariation = newValue;
-            break;
-        }
-      }),
     );
   }
 }
