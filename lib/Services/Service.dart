@@ -6,77 +6,98 @@ class FieldPlacementService {
 
   // Mapping shot placement indices to fielder positions
   static final Map<int, String> fieldingPositionMap = {
-    0: 'Slip',
-    1: 'Point',
-    2: 'Cover',
-    3: 'Mid-off',
+    0: 'Keeper',
+    1: 'Slip',
+    2: 'Square Leg',
+    3: 'Mid-wicket',
     4: 'Mid-on',
-    5: 'Mid-wicket',
-    6: 'Square Leg',
-    7: 'Fine Leg',
-    8: 'Third Man',
-    9: 'Deep Point',
-    10: 'Deep Cover',
-    11: 'Long-Off',
-    12: 'Long-On',
-    13: 'Deep Mid-Wicket',
-    14: 'Deep Square Leg',
+    5: 'Mid-off',
+    6: 'Cover',
+    7: 'Point',
+    8: 'Fine Leg',
+    9: 'Deep Square Leg',
+    10: 'Deep Mid-Wicket',
+    11: 'Long-On',
+    12: 'Long-Off',
+    13: 'Deep Cover',
+    14: 'Deep Point',
+    15: 'Third Man',
+    16: 'Bowler'
   };
 
+  static final Map<String, int> batsmanEncoding = {
+    "Babar Azam - Pakistan": 0,
+    "Jos Buttler - England": 1,
+  };
+
+  static final Map<String, int> overRangeEncoding = {
+    "death": 0,
+    "middle": 1,
+    "Powerplay": 2,
+  };
+
+  static final Map<String, int> pitchTypeEncoding = {
+    "Batting-Friendly": 0,
+    "Bowler-Friendly": 1,
+    "Neutral": 2,
+  };
+
+  static final Map<String, int> bowlerVariationEncoding = {
+    "Pace": 0,
+    "Spin": 1,
+  };
+
+  // Replace these with the exact values from your StandardScaler (Python output)
+  static final List<double> means = [0.5, 1.0, 1.0, 0.5];
+  static final List<double> stds = [0.5, 0.82, 0.82, 0.5];
+
   static Future<void> loadModel() async {
+    if (_interpreter != null) return; // Prevent reloading the model
     try {
       print('Loading TFLite model...');
       _interpreter =
-          await Interpreter.fromAsset('assets/model/cricfield_model.tflite');
+          await Interpreter.fromAsset('model/cricfield_model.tflite');
       print('Model loaded successfully');
     } catch (e) {
       print('Error loading model: $e');
     }
   }
 
-  static List<int> predictFieldPlacements({
+  static Future<List<int>> predictFieldPlacements({
     required String batsman,
     required String overRange,
     required String pitchType,
     required String bowlerVariation,
-  }) {
-    if (_interpreter == null) {
-      print('Interpreter is null - model not loaded');
-      return [];
-    }
-
-    print('Making prediction with inputs:');
-    print('Batsman: $batsman');
-    print('Over Range: $overRange');
-    print('Pitch Type: $pitchType');
-    print('Bowler Variation: $bowlerVariation');
-
-    // Prepare input data
-    final List<double> input = _prepareInputData(
-      batsman: batsman,
-      overRange: overRange,
-      pitchType: pitchType,
-      bowlerVariation: bowlerVariation,
-    );
-
-    // Create output buffer to match the model's output shape
-    var output = List.filled(15, 0.0); // Adjust to match [15]
-
-    // Run inference
+  }) async {
     try {
-      _interpreter!.run([input], [output]);
-      print('Raw model output: $output');
+      // Prepare input data
+      final input = [
+        _prepareInputData(
+          batsman: batsman,
+          overRange: overRange,
+          pitchType: pitchType,
+          bowlerVariation: bowlerVariation,
+        )
+      ];
 
-      // Get indices sorted by probability (highest first)
-      List<int> sortedIndices = List.generate(output.length, (i) => i)
-        ..sort((a, b) => output[b].compareTo(output[a]));
+      // Load the model
+      _interpreter ??=
+          await Interpreter.fromAsset('assets/model/cricfield_model.tflite');
 
-      print('Sorted indices: $sortedIndices');
+      // Prepare output buffer
+      final output = List.filled(1 * 15, 0.0).reshape([1, 15]);
 
-      // Return top 9 indices
-      return sortedIndices.take(9).toList();
+      // Run inference
+      _interpreter!.run(input, output);
+
+      // Extract top 9 predictions
+      final rawOutput = output[0];
+      final top9Indices = List.generate(rawOutput.length, (index) => index)
+        ..sort((a, b) => rawOutput[b].compareTo(rawOutput[a]));
+
+      return top9Indices.sublist(0, 9);
     } catch (e) {
-      print('Error during inference: $e');
+      print("Prediction Error: $e");
       return [];
     }
   }
@@ -87,23 +108,19 @@ class FieldPlacementService {
     required String pitchType,
     required String bowlerVariation,
   }) {
-    List<double> input = [];
+    // Encode inputs
+    final encodedInput = [
+      batsmanEncoding[batsman] ?? 0,
+      overRangeEncoding[overRange] ?? 0,
+      pitchTypeEncoding[pitchType] ?? 0,
+      bowlerVariationEncoding[bowlerVariation] ?? 0,
+    ];
 
-    // Batsman encoding (0 for Babar Azam, 1 for Jos Buttler)
-    input.add(batsman == 'Babar Azam' ? 0.0 : 1.0);
+    // Scale inputs
+    final scaledInput = List.generate(encodedInput.length, (i) {
+      return (encodedInput[i] - means[i]) / stds[i];
+    });
 
-    // Over range encoding (One-hot: [Powerplay, Middle, Death])
-    input.add(
-        overRange == 'Powerplay' ? 0.0 : (overRange == 'Middle' ? 1.0 : 2.0));
-
-    // Pitch type encoding (0 for Batting-Friendly, 1 for Bowler-Friendly, 2 for Neutral)
-    input.add(pitchType == 'Batting-Friendly'
-        ? 0.0
-        : (pitchType == 'Bowler-Friendly' ? 1.0 : 2.0));
-
-    // Bowler variation encoding (0 for Pace, 1 for Spin)
-    input.add(bowlerVariation == 'Pace' ? 0.0 : 1.0);
-
-    return input;
+    return scaledInput;
   }
 }
