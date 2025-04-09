@@ -1,6 +1,7 @@
 import 'package:cric_field_project_1/Pages/InputPage.dart';
 import 'package:cric_field_project_1/Pages/WagonWheelPage.dart';
 import 'package:cric_field_project_1/Services/Service.dart';
+import 'package:cric_field_project_1/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -18,14 +19,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Cricket Shot Analysis',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      initialRoute: '/', // Set LoginPage as the initial route
+      theme: AppTheme.lightTheme,
+      initialRoute: '/',
       routes: {
-        // '/login': (context) => const LoginPage(),
-        // '/register': (context) => const RegisterPage(),
         '/': (context) => const InputPage(),
         '/wagonWheel': (context) {
           final args = ModalRoute.of(context)?.settings.arguments
