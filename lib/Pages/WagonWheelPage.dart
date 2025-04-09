@@ -15,6 +15,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
   List<String> topShotTypes = [];
   double modelAccuracy = 0.2; // Static display, can be dynamic if needed
   bool showFielderNames = false; // Add this state variable
+  bool isContextExpanded = true; // Track if context card is expanded
 
   @override
   void initState() {
@@ -64,41 +65,83 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
+            // Context Card with Expand/Collapse functionality
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Match Context",
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text("Batsman: ${widget.inputData['batsman']}",
-                        style: TextStyle(fontSize: 16)),
-                    Text("Over Range: ${widget.inputData['overRange']}",
-                        style: TextStyle(fontSize: 16)),
-                    Text("Pitch Type: ${widget.inputData['pitchType']}",
-                        style: TextStyle(fontSize: 16)),
-                    Text(
-                        "Bowler Variation: ${widget.inputData['bowlerVariation']}",
-                        style: TextStyle(fontSize: 16)),
-                    const SizedBox(height: 8),
-                    Row(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  // Header row with title and expand/collapse button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(Icons.assessment, color: Colors.green),
-                        const SizedBox(width: 8),
                         Text(
-                            "Model Accuracy: ${(modelAccuracy * 100).toStringAsFixed(1)}%",
-                            style: TextStyle(fontWeight: FontWeight.bold))
+                          "Match Context",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            isContextExpanded
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            color: AppColors.primary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isContextExpanded = !isContextExpanded;
+                            });
+                          },
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  // Animated container for content
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: isContextExpanded ? null : 0,
+                    child: isContextExpanded
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                                12.0, 0.0, 12.0, 12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Divider(),
+                                Text("Batsman: ${widget.inputData['batsman']}",
+                                    style: TextStyle(fontSize: 16)),
+                                Text(
+                                    "Over Range: ${widget.inputData['overRange']}",
+                                    style: TextStyle(fontSize: 16)),
+                                Text(
+                                    "Pitch Type: ${widget.inputData['pitchType']}",
+                                    style: TextStyle(fontSize: 16)),
+                                Text(
+                                    "Bowler Variation: ${widget.inputData['bowlerVariation']}",
+                                    style: TextStyle(fontSize: 16)),
+                                // const SizedBox(height: 8),
+                                // Row(
+                                //   children: [
+                                //     Icon(Icons.assessment,
+                                //         color: AppColors.primary),
+                                //     const SizedBox(width: 8),
+                                //     Text(
+                                //       "Model Accuracy: ${(modelAccuracy * 100).toStringAsFixed(1)}%",
+                                //       style: TextStyle(
+                                //           fontWeight: FontWeight.bold),
+                                //     ),
+                                //   ],
+                                // ),
+                              ],
+                            ),
+                          )
+                        : Container(), // Empty container when collapsed
+                  ),
+                ],
               ),
             ),
             // const SizedBox(height: 20),
@@ -135,6 +178,52 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                   ),
                 ),
               ],
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8, bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Fielding Position Priority",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 40,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomPaint(
+                              painter: HeatmapBarPainter(),
+                              size: Size(double.infinity, 20),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Higher Priority",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          "Lower Priority",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -309,4 +398,55 @@ class WagonWheelPainter extends CustomPainter {
     return oldDelegate.rankedFielders != rankedFielders ||
         oldDelegate.showNames != showNames;
   }
+}
+
+// Add this class at the end of the file, after WagonWheelPainter
+
+class HeatmapBarPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+
+    // Create gradient from red (high priority) to yellow (low priority)
+    final gradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [
+        AppColors.fieldingHotspot, // Red for high priority
+        AppColors.secondary, // Yellow/amber for low priority
+      ],
+    );
+
+    // Apply the gradient to a paint object
+    final paint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.fill;
+
+    // Draw rounded rectangle for the heatmap bar
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, Radius.circular(4.0)), paint);
+
+    // Add border
+    final borderPaint = Paint()
+      ..color = Colors.grey
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, Radius.circular(4.0)), borderPaint);
+
+    // Add tick marks if desired
+    for (int i = 0; i <= 4; i++) {
+      final x = size.width * i / 4;
+      canvas.drawLine(
+          Offset(x, 0),
+          Offset(x, 4),
+          Paint()
+            ..color = Colors.white
+            ..strokeWidth = 1);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
