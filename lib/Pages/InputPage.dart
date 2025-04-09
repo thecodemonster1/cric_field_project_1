@@ -1,5 +1,6 @@
 // InputPage.dart
 import 'package:flutter/material.dart';
+import 'package:cric_field_project_1/theme/app_theme.dart';
 
 class InputPage extends StatefulWidget {
   const InputPage({super.key});
@@ -25,14 +26,11 @@ class _InputPageState extends State<InputPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[700],
         title: const Text(
           'Cricket Shot Analysis',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        elevation: 0,
-        // backgroundColor: Theme.of(context).primaryColor,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -40,8 +38,8 @@ class _InputPageState extends State<InputPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).primaryColor.withOpacity(0.05),
-              Colors.white,
+              AppColors.primary.withOpacity(0.05),
+              AppColors.white,
             ],
           ),
         ),
