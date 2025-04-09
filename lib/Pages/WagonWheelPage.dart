@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cric_field_project_1/Services/Service.dart';
+import 'package:cric_field_project_1/theme/app_theme.dart';
 
 class WagonWheelPage extends StatefulWidget {
   final Map<String, dynamic> inputData;
@@ -58,7 +59,6 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('CricField Analyzer'),
-        backgroundColor: Colors.green[700],
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -118,7 +118,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -178,9 +178,9 @@ class WagonWheelPainter extends CustomPainter {
     final radius = size.width / 2;
 
     // Draw field (existing code)
-    final Paint ground = Paint()..color = Colors.green;
+    final Paint ground = Paint()..color = AppColors.fieldGreen;
     final Paint boundary = Paint()
-      ..color = Colors.white
+      ..color = AppColors.white
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 
@@ -239,8 +239,8 @@ class WagonWheelPainter extends CustomPainter {
         // Gradient colors based on rank (1=green, 9=yellow)
         int rank = positionRanks[entry.key] ?? 5;
         double rankRatio = (rank - 1) / 8.0; // From 0.0 to 1.0
-        dotColor =
-            Color.lerp(const Color.fromARGB(255, 206, 0, 0)!, Colors.amber[500]!, rankRatio)!;
+        dotColor = Color.lerp(
+            AppColors.fieldingHotspot, AppColors.secondary, rankRatio)!;
       } else {
         dotColor = Colors.grey.withOpacity(0.4); // Inactive positions
       }
