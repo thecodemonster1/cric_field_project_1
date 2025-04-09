@@ -24,10 +24,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: '/login', // Set LoginPage as the initial route
+      initialRoute: '/', // Set LoginPage as the initial route
       routes: {
-        '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
+        // '/login': (context) => const LoginPage(),
+        // '/register': (context) => const RegisterPage(),
         '/': (context) => const InputPage(),
         '/wagonWheel': (context) {
           final args = ModalRoute.of(context)?.settings.arguments
