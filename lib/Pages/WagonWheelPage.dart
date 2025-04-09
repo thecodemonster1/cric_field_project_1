@@ -1,5 +1,5 @@
-import 'package:cric_field_project_1/Services/Service.dart';
 import 'package:flutter/material.dart';
+import 'package:cric_field_project_1/Services/Service.dart';
 
 class WagonWheelPage extends StatefulWidget {
   final Map<String, dynamic> inputData;
@@ -10,66 +10,45 @@ class WagonWheelPage extends StatefulWidget {
 }
 
 class _WagonWheelPageState extends State<WagonWheelPage> {
-  final Map<String, bool> enabledFielders = {
-    'Slip': false,
-    'Point': false,
-    'Square Leg': false,
-    'Cover': false,
-    'Mid-wicket': false,
-    'Mid-off': false,
-    'Mid-on': false,
-    'Third Man': false,
-    'Fine Leg': false,
-    'Deep Point': false,
-    'Deep Square Leg': false,
-    'Deep Cover': false,
-    'Deep Mid-Wicket': false,
-    'Long-Off': false,
-    'Long-On': false,
-    'Wicket Keeper': true, // Always enabled
-    'Bowler': true, // Always enabled
-  };
-
-  int activeFielderCount = 0; // Track number of active fielders
+  List<Map<String, dynamic>> topFielders = [];
+  List<String> topShotTypes = [];
+  double modelAccuracy = 0.2; // Static display, can be dynamic if needed
 
   @override
   void initState() {
     super.initState();
-    _initializeFielders();
+    _initializePrediction();
   }
 
-  void _initializeFielders() async {
+  Future<void> _initializePrediction() async {
     await FieldPlacementService.loadModel();
 
-    // Get predictions from the model
-    final predictions = await FieldPlacementService.predictFieldPlacements(
+    final result = await FieldPlacementService.predictFieldPlacements(
       batsman: widget.inputData['batsman'],
       overRange: widget.inputData['overRange'],
       pitchType: widget.inputData['pitchType'],
       bowlerVariation: widget.inputData['bowlerVariation'],
     );
 
-    // Print raw predictions
-    print('Raw model predictions (indices): $predictions');
+    final placements = result['placement'];
+    final shots = result['shotType'];
+
+    final fieldingPositionMap = FieldPlacementService.fieldingPositionMap;
+    final shotTypeMap = FieldPlacementService.shotTypeMap;
 
     setState(() {
-      // Clear existing positions except for Wicket Keeper and Bowler
-      enabledFielders.updateAll((key, value) {
-        if (key == 'Wicket Keeper' || key == 'Bowler') {
-          return true; // Always enabled
-        }
-        return false; // Reset others
-      });
+      topFielders = placements
+              ?.asMap()
+              .entries
+              .map((e) => {
+                    'name': fieldingPositionMap[e.value] ?? 'Unknown',
+                    'rank': e.key + 1
+                  })
+              .toList() ??
+          [];
 
-      // Enable top 9 predicted fielding positions
-      for (var index in predictions) {
-        String position =
-            FieldPlacementService.fieldingPositionMap[index] ?? 'Unknown';
-        enabledFielders[position] = true;
-      }
-
-      // Update active fielder count (excluding bowler and wicket keeper)
-      activeFielderCount = enabledFielders.values.where((v) => v).length - 2;
+      topShotTypes =
+          shots?.map((i) => shotTypeMap[i] ?? 'Unknown').toList() ?? [];
     });
   }
 
@@ -77,173 +56,150 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Field Placement'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('CricField Analyzer'),
+        backgroundColor: Colors.green[700],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Center(
-              child: CustomPaint(
-                size: const Size(300, 300),
-                painter: WagonWheelPainter(enabledFielders),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Match Context",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text("Batsman: ${widget.inputData['batsman']}",
+                        style: TextStyle(fontSize: 16)),
+                    Text("Over Range: ${widget.inputData['overRange']}",
+                        style: TextStyle(fontSize: 16)),
+                    Text("Pitch Type: ${widget.inputData['pitchType']}",
+                        style: TextStyle(fontSize: 16)),
+                    Text(
+                        "Bowler Variation: ${widget.inputData['bowlerVariation']}",
+                        style: TextStyle(fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.assessment, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Text(
+                            "Model Accuracy: ${(modelAccuracy * 100).toStringAsFixed(1)}%",
+                            style: TextStyle(fontWeight: FontWeight.bold))
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
+            const SizedBox(height: 60),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: CustomPaint(
+                    size: const Size(300, 300),
+                    painter: WagonWheelPainter(
+                        topFielders.map((e) => e['name'] as String).toList()),
+                  ),
+                ),
+              ],
+              // ),
+            ),
+            const SizedBox(height: 60),
+            Expanded(
+              child: ListView(
                 children: [
-                  Text(
-                    'Active Fielders: $activeFielderCount/9',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: enabledFielders.keys.map((fielder) {
-                        return CheckboxListTile(
-                          title: Text(fielder),
-                          value: enabledFielders[fielder],
-                          onChanged: (fielder == 'Wicket Keeper' ||
-                                  fielder == 'Bowler')
-                              ? null // Disable toggling for Wicket Keeper and Bowler
-                              : (activeFielderCount < 9 ||
-                                      enabledFielders[fielder] == true)
-                                  ? (bool? value) {
-                                      setState(() {
-                                        if (value == true) {
-                                          activeFielderCount++;
-                                        } else {
-                                          activeFielderCount--;
-                                        }
-                                        enabledFielders[fielder] = value!;
-                                      });
-                                    }
-                                  : null,
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                  const Text("Top Fielding Positions (Ranked)",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ...topFielders.map((fielder) => ListTile(
+                        leading: CircleAvatar(
+                            child: Text(fielder['rank'].toString())),
+                        title: Text(fielder['name']),
+                      )),
+                  const Divider(),
+                  const Text("Top Shot Types",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ...topShotTypes.map((shot) => ListTile(
+                        leading: Icon(Icons.sports_cricket),
+                        title: Text(shot),
+                      )),
                 ],
               ),
-            ),
-          ),
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
 }
 
 class WagonWheelPainter extends CustomPainter {
-  final Map<String, bool> enabledFielders;
-
-  WagonWheelPainter(this.enabledFielders);
+  final List<String> highlightedPositions;
+  WagonWheelPainter(this.highlightedPositions);
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    // Draw grass background
-    final groundPaint = Paint()
-      ..color = const Color.fromARGB(255, 69, 168, 73)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, radius, groundPaint);
-
-    // Draw 30-yard circle
-    final thirtyYardPaint = Paint()
+    final Paint ground = Paint()..color = Colors.green;
+    final Paint boundary = Paint()
       ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    canvas.drawCircle(center, radius * 0.6, thirtyYardPaint);
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
 
-    // Draw boundary
-    final boundaryPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    canvas.drawCircle(center, radius, boundaryPaint);
+    canvas.drawCircle(center, radius, ground);
+    canvas.drawCircle(center, radius, boundary);
+    canvas.drawCircle(center, radius * 0.6, boundary);
 
-    // Draw pitch
-    final pitchPaint = Paint()
-      ..color = const Color.fromARGB(255, 194, 157, 121)
-      ..style = PaintingStyle.fill;
+    // Dummy pitch
+    final Paint pitchPaint = Paint()..color = Colors.brown;
     canvas.drawRect(
-      Rect.fromCenter(
-        center: center,
-        width: 20,
-        height: 80,
-      ),
-      pitchPaint,
-    );
+        Rect.fromCenter(center: center, width: 20, height: 80), pitchPaint);
 
-    // Define fielder positions
-    final fielderPositions = [
-      {'name': 'Wicket Keeper', 'x': 0.5, 'y': 0.3},
-      {'name': 'Slip', 'x': 0.38, 'y': 0.3},
-      {'name': 'Point', 'x': 0.25, 'y': 0.4},
-      {'name': 'Square Leg', 'x': (1 - 0.25), 'y': 0.4},
-      {'name': 'Cover', 'x': 0.25, 'y': 0.57},
-      {'name': 'Mid-wicket', 'x': (1 - 0.25), 'y': 0.57},
-      {'name': 'Mid-off', 'x': 0.35, 'y': 0.7},
-      {'name': 'Mid-on', 'x': (1 - 0.35), 'y': 0.7},
-      {'name': 'Third Man', 'x': 0.25, 'y': 0.12},
-      {'name': 'Fine Leg', 'x': (1 - 0.25), 'y': 0.12},
-      {'name': 'Deep Point', 'x': 0.05, 'y': 0.5},
-      {'name': 'Deep Square Leg', 'x': (1 - 0.05), 'y': 0.5},
-      {'name': 'Deep Cover', 'x': 0.18, 'y': 0.75},
-      {'name': 'Deep Mid-Wicket', 'x': (1 - 0.18), 'y': 0.75},
-      {'name': 'Long-Off', 'x': 0.43, 'y': 0.93},
-      {'name': 'Long-On', 'x': (1 - 0.43), 'y': 0.93},
-      {'name': 'Bowler', 'x': 0.5, 'y': 0.7},
-    ];
+    final positions = {
+      'Slip': Offset(0.38, 0.3),
+      'Point': Offset(0.25, 0.4),
+      'Square Leg': Offset(0.75, 0.4),
+      'Cover': Offset(0.25, 0.57),
+      'Mid-Wicket': Offset(0.75, 0.57),
+      'Mid-off': Offset(0.35, 0.7),
+      'Mid-on': Offset(0.65, 0.7),
+      'Third Man': Offset(0.25, 0.12),
+      'Fine Leg': Offset(0.75, 0.12),
+      'Deep Point': Offset(0.05, 0.5),
+      'Deep Square Leg': Offset(0.95, 0.5),
+      'Deep Cover': Offset(0.18, 0.75),
+      'Deep Mid-Wicket': Offset(0.82, 0.75),
+      'Long-Off': Offset(0.43, 0.93),
+      'Long-On': Offset(0.57, 0.93),
+      'Wicket Keeper': Offset(0.5, 0.3),
+      'Bowler': Offset(0.5, 0.7),
+    };
 
-    // Draw fielders
-    for (var fielder in fielderPositions) {
-      final position = Offset(
-        (fielder['x']! as double) * size.width,
-        (fielder['y']! as double) * size.height,
-      );
-
-      final isEnabled = enabledFielders[fielder['name']] ?? false;
-
-      final fielderPaint = Paint()
-        ..color = isEnabled ? Colors.white : Colors.grey.withOpacity(0.5)
-        ..style = PaintingStyle.fill;
-
-      // Draw fielder circle
-      canvas.drawCircle(position, 6, fielderPaint);
-
-      // Draw fielder label
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: fielder['name'] as String,
-          style: TextStyle(
-            color: isEnabled ? Colors.black : Colors.grey,
-            fontSize: 8,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-        textAlign: TextAlign.center,
-      );
-
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        position.translate(-textPainter.width / 2, 8),
-      );
+    for (var entry in positions.entries) {
+      final isActive = highlightedPositions.contains(entry.key);
+      final offset =
+          Offset(entry.value.dx * size.width, entry.value.dy * size.height);
+      final color = isActive ? Colors.white : Colors.grey.withOpacity(0.4);
+      canvas.drawCircle(offset, 6, Paint()..color = color);
     }
   }
 
   @override
   bool shouldRepaint(covariant WagonWheelPainter oldDelegate) {
-    return oldDelegate.enabledFielders != enabledFielders;
+    return oldDelegate.highlightedPositions != highlightedPositions;
   }
 }
