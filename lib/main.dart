@@ -1,5 +1,3 @@
-import 'package:cric_field_project_1/Pages/LoginPage.dart';
-import 'package:cric_field_project_1/Pages/RegisterPage.dart';
 import 'package:cric_field_project_1/Pages/InputPage.dart';
 import 'package:cric_field_project_1/Pages/WagonWheelPage.dart';
 import 'package:cric_field_project_1/Services/Service.dart';
