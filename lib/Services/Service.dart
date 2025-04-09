@@ -1,5 +1,4 @@
 import 'package:tflite_flutter/tflite_flutter.dart';
-import 'dart:math';
 
 class FieldPlacementService {
   static Interpreter? _interpreter;
