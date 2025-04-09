@@ -1,3 +1,4 @@
+import 'package:cric_field_project_1/Pages/DashboardPage.dart';
 import 'package:cric_field_project_1/Pages/InputPage.dart';
 import 'package:cric_field_project_1/Pages/WagonWheelPage.dart';
 import 'package:cric_field_project_1/Services/Service.dart';
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       initialRoute: '/',
       routes: {
-        '/': (context) => const InputPage(),
+        '/': (context) => const DashboardPage(),
+        '/input': (context) => const InputPage(),
         '/wagonWheel': (context) {
           final args = ModalRoute.of(context)?.settings.arguments
               as Map<String, dynamic>?;
