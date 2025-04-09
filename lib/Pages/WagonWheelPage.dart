@@ -13,6 +13,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
   List<Map<String, dynamic>> topFielders = [];
   List<String> topShotTypes = [];
   double modelAccuracy = 0.2; // Static display, can be dynamic if needed
+  bool showFielderNames = false; // Add this state variable
 
   @override
   void initState() {
@@ -100,22 +101,42 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 60),
+            // const SizedBox(height: 20),
+            // Add toggle switch for fielder names
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: CustomPaint(
-                    size: const Size(300, 300),
-                    painter: WagonWheelPainter(
-                        topFielders.map((e) => e['name'] as String).toList()),
+                Text("Show fielder names"),
+                Switch(
+                  value: showFielderNames,
+                  onChanged: (value) {
+                    setState(() {
+                      showFielderNames = value;
+                    });
+                  },
+                  activeColor: Colors.green[700],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  // flex: 1,
+                  child: Center(
+                    child: CustomPaint(
+                      size: const Size(350, 350),
+                      painter: WagonWheelPainter(
+                        topFielders, // Pass the complete list with name and rank
+                        showFielderNames, // Pass the state to the painter
+                      ),
+                    ),
                   ),
                 ),
               ],
-              // ),
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView(
                 children: [
@@ -146,14 +167,17 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
 }
 
 class WagonWheelPainter extends CustomPainter {
-  final List<String> highlightedPositions;
-  WagonWheelPainter(this.highlightedPositions);
+  final List<Map<String, dynamic>> rankedFielders; // Change parameter type
+  final bool showNames;
+
+  WagonWheelPainter(this.rankedFielders, this.showNames);
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
+    // Draw field (existing code)
     final Paint ground = Paint()..color = Colors.green;
     final Paint boundary = Paint()
       ..color = Colors.white
@@ -164,19 +188,29 @@ class WagonWheelPainter extends CustomPainter {
     canvas.drawCircle(center, radius, boundary);
     canvas.drawCircle(center, radius * 0.6, boundary);
 
-    // Dummy pitch
+    // Draw pitch
     final Paint pitchPaint = Paint()..color = Colors.brown;
     canvas.drawRect(
         Rect.fromCenter(center: center, width: 20, height: 80), pitchPaint);
 
+    // Extract the highlighted position names
+    List<String> highlightedPositions =
+        rankedFielders.map((e) => e['name'] as String).toList();
+
+    // Create a map of name to rank for quick lookup
+    Map<String, int> positionRanks = {};
+    for (var fielder in rankedFielders) {
+      positionRanks[fielder['name']] = fielder['rank'];
+    }
+
     final positions = {
-      'Slip': Offset(0.38, 0.3),
+      'Slips': Offset(0.38, 0.3),
       'Point': Offset(0.25, 0.4),
       'Square Leg': Offset(0.75, 0.4),
       'Cover': Offset(0.25, 0.57),
       'Mid-Wicket': Offset(0.75, 0.57),
-      'Mid-off': Offset(0.35, 0.7),
-      'Mid-on': Offset(0.65, 0.7),
+      'Mid-Off': Offset(0.35, 0.7),
+      'Mid-On': Offset(0.65, 0.7),
       'Third Man': Offset(0.25, 0.12),
       'Fine Leg': Offset(0.75, 0.12),
       'Deep Point': Offset(0.05, 0.5),
@@ -189,17 +223,90 @@ class WagonWheelPainter extends CustomPainter {
       'Bowler': Offset(0.5, 0.7),
     };
 
+    // Draw the fixed positions (keeper and bowler)
     for (var entry in positions.entries) {
-      final isActive = highlightedPositions.contains(entry.key);
+      final isActive = highlightedPositions.contains(entry.key) ||
+          entry.key == 'Wicket Keeper' ||
+          entry.key == 'Bowler';
       final offset =
           Offset(entry.value.dx * size.width, entry.value.dy * size.height);
-      final color = isActive ? Colors.white : Colors.grey.withOpacity(0.4);
-      canvas.drawCircle(offset, 6, Paint()..color = color);
+
+      // Different colors based on rank or default positions
+      Color dotColor;
+      if (entry.key == 'Wicket Keeper' || entry.key == 'Bowler') {
+        dotColor = Colors.white; // Always white for keeper and bowler
+      } else if (highlightedPositions.contains(entry.key)) {
+        // Gradient colors based on rank (1=green, 9=yellow)
+        int rank = positionRanks[entry.key] ?? 5;
+        double rankRatio = (rank - 1) / 8.0; // From 0.0 to 1.0
+        dotColor =
+            Color.lerp(const Color.fromARGB(255, 206, 0, 0)!, Colors.amber[500]!, rankRatio)!;
+      } else {
+        dotColor = Colors.grey.withOpacity(0.4); // Inactive positions
+      }
+
+      // Draw fielder dot
+      canvas.drawCircle(offset, 8, Paint()..color = dotColor);
+
+      // Draw rank number on top of the fielder dot if it's a highlighted position
+      if (highlightedPositions.contains(entry.key)) {
+        final rankSpan = TextSpan(
+          text: '${positionRanks[entry.key]}',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        );
+
+        final rankPainter = TextPainter(
+          text: rankSpan,
+          textDirection: TextDirection.ltr,
+        );
+
+        rankPainter.layout();
+        rankPainter.paint(
+          canvas,
+          Offset(offset.dx - rankPainter.width / 2,
+              offset.dy - rankPainter.height / 2),
+        );
+      }
+
+      // Draw fielder name if enabled
+      if (showNames) {
+        final textSpan = TextSpan(
+          text: entry.key,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            shadows: [
+              Shadow(
+                blurRadius: 2.0,
+                color: Colors.black,
+                offset: Offset(1.0, 1.0),
+              ),
+            ],
+          ),
+        );
+
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        );
+
+        textPainter.layout();
+        textPainter.paint(
+          canvas,
+          Offset(offset.dx - (textPainter.width / 2), offset.dy + 10),
+        );
+      }
     }
   }
 
   @override
   bool shouldRepaint(covariant WagonWheelPainter oldDelegate) {
-    return oldDelegate.highlightedPositions != highlightedPositions;
+    return oldDelegate.rankedFielders != rankedFielders ||
+        oldDelegate.showNames != showNames;
   }
 }
