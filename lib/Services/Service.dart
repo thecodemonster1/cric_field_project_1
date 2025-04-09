@@ -1,16 +1,16 @@
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class FieldPlacementService {
-  static Interpreter? _interpreter;
+  static late Interpreter _interpreter;
+  static bool _isModelLoaded = false;
 
-  // Mapping shot placement indices to fielder positions
-  static final Map<int, String> fieldingPositionMap = {
-    0: 'Keeper',
-    1: 'Slip',
+  // Label mapping (if needed)
+  static Map<int, String> fieldingPositionMap = {
+    1: 'Slips',
     2: 'Square Leg',
-    3: 'Mid-wicket',
-    4: 'Mid-on',
-    5: 'Mid-off',
+    3: 'Mid-Wicket',
+    4: 'Mid-On',
+    5: 'Mid-Off',
     6: 'Cover',
     7: 'Point',
     8: 'Fine Leg',
@@ -21,105 +21,101 @@ class FieldPlacementService {
     13: 'Deep Cover',
     14: 'Deep Point',
     15: 'Third Man',
-    16: 'Bowler'
   };
 
-  static final Map<String, int> batsmanEncoding = {
-    "Babar Azam - Pakistan": 0,
-    "Jos Buttler - England": 1,
+  static Map<int, String> shotTypeMap = {
+    0: 'Missed',
+    1: 'Drive',
+    2: 'Cut',
+    3: 'Glance',
+    4: 'Sweep',
+    5: 'Defend',
+    6: 'Pull',
   };
 
-  static final Map<String, int> overRangeEncoding = {
-    "death": 0,
-    "middle": 1,
-    "Powerplay": 2,
-  };
-
-  static final Map<String, int> pitchTypeEncoding = {
-    "Batting-Friendly": 0,
-    "Bowler-Friendly": 1,
-    "Neutral": 2,
-  };
-
-  static final Map<String, int> bowlerVariationEncoding = {
-    "Pace": 0,
-    "Spin": 1,
-  };
-
-  // Replace these with the exact values from your StandardScaler (Python output)
-  static final List<double> means = [0.5, 1.0, 1.0, 0.5];
-  static final List<double> stds = [0.5, 0.82, 0.82, 0.5];
+  // Example scaler values (replace with actual mean and std from your Colab scaler)
+  static final List<double> _mean = [0.5, 1.2, 0.8, 1.0];
+  static final List<double> _std = [0.7, 0.5, 1.1, 0.6];
 
   static Future<void> loadModel() async {
-    if (_interpreter != null) return; // Prevent reloading the model
     try {
-      print('Loading TFLite model...');
       _interpreter =
-          await Interpreter.fromAsset('model/cricfield_model.tflite');
-      print('Model loaded successfully');
+          await Interpreter.fromAsset('model/cricfield_dual_model.tflite');
+      _isModelLoaded = true;
+
+      // Print model input and output shapes
+      print("✅ TFLite dual-output model loaded.");
+      print(
+          "Model input shape: ${_interpreter.getInputTensors().map((t) => t.shape).toList()}");
+      print(
+          "Model output shape: ${_interpreter.getOutputTensors().map((t) => t.shape).toList()}");
     } catch (e) {
-      print('Error loading model: $e');
+      print("❌ Failed to load model: $e");
     }
   }
 
-  static Future<List<int>> predictFieldPlacements({
+  static List<double> _standardize(List<double> input) {
+    return List.generate(input.length, (i) => (input[i] - _mean[i]) / _std[i]);
+  }
+
+  static Future<Map<String, List<int>>> predictFieldPlacements({
     required String batsman,
     required String overRange,
     required String pitchType,
     required String bowlerVariation,
   }) async {
-    try {
-      // Prepare input data
-      final input = [
-        _prepareInputData(
-          batsman: batsman,
-          overRange: overRange,
-          pitchType: pitchType,
-          bowlerVariation: bowlerVariation,
-        )
-      ];
-
-      // Load the model
-      _interpreter ??=
-          await Interpreter.fromAsset('model/cricfield_model.tflite');
-
-      // Prepare output buffer
-      final output = List.filled(1 * 15, 0.0).reshape([1, 15]);
-
-      // Run inference
-      _interpreter!.run(input, output);
-
-      // Extract top 9 predictions
-      final rawOutput = output[0];
-      final top9Indices = List.generate(rawOutput.length, (index) => index)
-        ..sort((a, b) => rawOutput[b].compareTo(rawOutput[a]));
-
-      return top9Indices.sublist(0, 9);
-    } catch (e) {
-      print("Prediction Error: $e");
-      return [];
+    if (!_isModelLoaded) {
+      print("Model not loaded.");
+      return {'placement': [], 'shotType': []};
     }
-  }
 
-  static List<double> _prepareInputData({
-    required String batsman,
-    required String overRange,
-    required String pitchType,
-    required String bowlerVariation,
-  }) {
-    // Encode inputs
-    final encodedInput = [
-      batsmanEncoding[batsman] ?? 0,
-      overRangeEncoding[overRange] ?? 0,
-      pitchTypeEncoding[pitchType] ?? 0,
-      bowlerVariationEncoding[bowlerVariation] ?? 0,
-    ];
+    // Encode inputs (replace with your actual encoding)
+    double batsmanCode = batsman == "Babar Azam" ? 0 : 1;
+    double overCode = overRange == "death"
+        ? 0
+        : overRange == "middle"
+            ? 1
+            : 2;
+    double pitchCode = pitchType == "Batting-Friendly"
+        ? 0
+        : pitchType == "Bowler-Friendly"
+            ? 1
+            : 2;
+    double variationCode = bowlerVariation == "Pace" ? 0 : 1;
 
-    // Scale inputs
-    final scaledInput = List.generate(encodedInput.length, (i) {
-      return (encodedInput[i] - means[i]) / stds[i];
+    List<double> input = [batsmanCode, overCode, pitchCode, variationCode];
+    List<double> inputNormalized = _standardize(input);
+
+    // TFLite input/output
+    var inputBuffer = [inputNormalized];
+    var outputPlacement = List.filled(15, 0.0).reshape([1, 15]);
+    var outputShotType = List.filled(7, 0.0).reshape([1, 7]);
+
+    _interpreter.runForMultipleInputs([
+      inputBuffer
+    ], {
+      0: outputShotType,
+      1: outputPlacement,
     });
 
-    return scaledInput;
+    List<double> placementProbs = outputPlacement[0];
+    List<double> shotTypeProbs = outputShotType[0];
+
+    // Top 9 shot placements (excluding Keeper [0] and Bowler [16])
+    List<int> placementIndices = List.generate(placementProbs.length, (i) => i);
+    placementIndices.removeWhere((i) => i == 0 || i == 16);
+    placementIndices
+        .sort((a, b) => placementProbs[b].compareTo(placementProbs[a]));
+    List<int> top9Placement = placementIndices.take(9).toList();
+
+    // Top 3 shot types
+    List<int> shotIndices = List.generate(shotTypeProbs.length, (i) => i);
+    shotIndices.sort((a, b) => shotTypeProbs[b].compareTo(shotTypeProbs[a]));
+    List<int> top3ShotType = shotIndices.take(3).toList();
+
+    return {
+      'placement': top9Placement,
+      'shotType': top3ShotType,
+    };
   }
 }
