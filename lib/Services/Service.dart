@@ -81,7 +81,7 @@ class FieldPlacementService {
 
       // Load the model
       _interpreter ??=
-          await Interpreter.fromAsset('assets/model/cricfield_model.tflite');
+          await Interpreter.fromAsset('model/cricfield_model.tflite');
 
       // Prepare output buffer
       final output = List.filled(1 * 15, 0.0).reshape([1, 15]);
