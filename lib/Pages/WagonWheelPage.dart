@@ -123,19 +123,6 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                                 Text(
                                     "Bowler Variation: ${widget.inputData['bowlerVariation']}",
                                     style: TextStyle(fontSize: 16)),
-                                // const SizedBox(height: 8),
-                                // Row(
-                                //   children: [
-                                //     Icon(Icons.assessment,
-                                //         color: AppColors.primary),
-                                //     const SizedBox(width: 8),
-                                //     Text(
-                                //       "Model Accuracy: ${(modelAccuracy * 100).toStringAsFixed(1)}%",
-                                //       style: TextStyle(
-                                //           fontWeight: FontWeight.bold),
-                                //     ),
-                                //   ],
-                                // ),
                               ],
                             ),
                           )
