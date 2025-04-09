@@ -45,10 +45,10 @@ class FieldPlacementService {
 
       // Print model input and output shapes
       print("✅ TFLite dual-output model loaded.");
-      print(
-          "Model input shape: ${_interpreter.getInputTensors().map((t) => t.shape).toList()}");
-      print(
-          "Model output shape: ${_interpreter.getOutputTensors().map((t) => t.shape).toList()}");
+      // print(
+      //     "Model input shape: ${_interpreter.getInputTensors().map((t) => t.shape).toList()}");
+      // print(
+      //     "Model output shape: ${_interpreter.getOutputTensors().map((t) => t.shape).toList()}");
     } catch (e) {
       print("❌ Failed to load model: $e");
     }
@@ -70,7 +70,7 @@ class FieldPlacementService {
     }
 
     // Encode inputs (replace with your actual encoding)
-    double batsmanCode = batsman == "Babar Azam" ? 0 : 1;
+    double batsmanCode = batsman == "Babar Azam - Pakistan" ? 0 : 1;
     double overCode = overRange == "death"
         ? 0
         : overRange == "middle"
@@ -112,6 +112,11 @@ class FieldPlacementService {
     List<int> shotIndices = List.generate(shotTypeProbs.length, (i) => i);
     shotIndices.sort((a, b) => shotTypeProbs[b].compareTo(shotTypeProbs[a]));
     List<int> top3ShotType = shotIndices.take(3).toList();
+
+    // Debug output
+    print("\nInput: [$batsmanCode, $overCode, $pitchCode, $variationCode]");
+    print("Top 9 Placements: $top9Placement");
+    print("Top 3 Shot Types: $top3ShotType\n");
 
     return {
       'placement': top9Placement,
