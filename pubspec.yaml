@@ -17,7 +17,7 @@ dependencies:
   tflite_flutter_helper: ^0.2.0
   percent_indicator: ^4.2.5
   fl_chart: ^0.70.2
-  firebase_core: ^3.13.0
+  # firebase_core: ^3.13.0
 
   # # Firebase packages
   # firebase_core: ^3.13.0
