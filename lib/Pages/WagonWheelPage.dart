@@ -176,7 +176,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                                 Expanded(
                                   child: Center(
                                     child: CustomPaint(
-                                      size: const Size(350, 350),
+                                      size: const Size(320, 320),
                                       painter: WagonWheelPainter(
                                         topFielders,
                                         showFielderNames,
@@ -205,8 +205,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                                             Expanded(
                                               child: CustomPaint(
                                                 painter: HeatmapBarPainter(),
-                                                size:
-                                                    Size(double.infinity, 20),
+                                                size: Size(double.infinity, 20),
                                               ),
                                             ),
                                           ],
@@ -364,7 +363,7 @@ class WagonWheelPainter extends CustomPainter {
     }
 
     final positions = {
-      'Slips': Offset(0.38, 0.3),
+      'Slips': Offset(0.38, 0.29),
       'Point': Offset(0.25, 0.4),
       'Square Leg': Offset(0.75, 0.4),
       'Cover': Offset(0.25, 0.57),
@@ -379,8 +378,8 @@ class WagonWheelPainter extends CustomPainter {
       'Deep Mid-Wicket': Offset(0.82, 0.75),
       'Long-Off': Offset(0.43, 0.93),
       'Long-On': Offset(0.57, 0.93),
-      'Wicket Keeper': Offset(0.5, 0.3),
-      'Bowler': Offset(0.5, 0.7),
+      'Wicket Keeper': Offset(0.5, 0.32),
+      'Bowler': Offset(0.5, 0.67),
     };
 
     // Draw the fixed positions (keeper and bowler)
