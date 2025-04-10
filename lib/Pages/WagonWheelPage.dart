@@ -131,8 +131,6 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                 ],
               ),
             ),
-            // const SizedBox(height: 20),
-            // Add toggle switch for fielder names
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -148,93 +146,179 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                 ),
               ],
             ),
-            // const SizedBox(height: 20),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  // flex: 1,
-                  child: Center(
-                    child: CustomPaint(
-                      size: const Size(350, 350),
-                      painter: WagonWheelPainter(
-                        topFielders, // Pass the complete list with name and rank
-                        showFielderNames, // Pass the state to the painter
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Card(
-              margin: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Fielding Position Priority",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 40,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: CustomPaint(
-                              painter: HeatmapBarPainter(),
-                              size: Size(double.infinity, 20),
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      children: [
+                        // First slide - Wagon Wheel visualization
+                        Card(
+                          elevation: 4,
+                          margin: const EdgeInsets.all(8.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Field Placement Analysis",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Expanded(
+                                  child: Center(
+                                    child: CustomPaint(
+                                      size: const Size(350, 350),
+                                      painter: WagonWheelPainter(
+                                        topFielders,
+                                        showFielderNames,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Fielding Position Priority",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                        height: 40,
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: CustomPaint(
+                                                painter: HeatmapBarPainter(),
+                                                size:
+                                                    Size(double.infinity, 20),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            "Higher Priority",
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                          Text(
+                                            "Lower Priority",
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Higher Priority",
-                          style: TextStyle(fontSize: 12),
                         ),
-                        Text(
-                          "Lower Priority",
-                          style: TextStyle(fontSize: 12),
+
+                        // Second slide - Rankings
+                        Card(
+                          elevation: 4,
+                          margin: const EdgeInsets.all(8.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Fielding & Shot Analysis",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView(
+                                    children: [
+                                      const Text(
+                                          "Top Fielding Positions (Ranked)",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold)),
+                                      ...topFielders.map((fielder) => ListTile(
+                                            leading: CircleAvatar(
+                                              backgroundColor: Color.lerp(
+                                                AppColors.fieldingHotspot,
+                                                AppColors.secondary,
+                                                (fielder['rank'] - 1) /
+                                                    (topFielders.length - 1),
+                                              ),
+                                              child: Text(
+                                                fielder['rank'].toString(),
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            title: Text(fielder['name']),
+                                          )),
+                                      const Divider(),
+                                      const Text("Top Shot Types",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold)),
+                                      ...topShotTypes.map((shot) => ListTile(
+                                            leading: Icon(Icons.sports_cricket),
+                                            title: Text(shot),
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView(
-                children: [
-                  const Text("Top Fielding Positions (Ranked)",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ...topFielders.map((fielder) => ListTile(
-                        leading: CircleAvatar(
-                            child: Text(fielder['rank'].toString())),
-                        title: Text(fielder['name']),
-                      )),
-                  const Divider(),
-                  const Text("Top Shot Types",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ...topShotTypes.map((shot) => ListTile(
-                        leading: Icon(Icons.sports_cricket),
-                        title: Text(shot),
-                      )),
+                    ),
+                  ),
+
+                  // Page indicator
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Swipe to view details →",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
