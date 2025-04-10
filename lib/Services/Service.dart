@@ -69,13 +69,16 @@ class FieldPlacementService {
       return {'placement': [], 'shotType': []};
     }
 
-    // Encode inputs (replace with your actual encoding)
+    // Encode inputs (fixing case sensitivity issue)
     double batsmanCode = batsman == "Babar Azam - Pakistan" ? 0 : 1;
-    double overCode = overRange == "death"
+
+    // Fix case sensitivity in overRange comparison
+    double overCode = overRange.toLowerCase() == "death"
         ? 0
-        : overRange == "middle"
+        : overRange.toLowerCase() == "middle"
             ? 1
             : 2;
+
     double pitchCode = pitchType == "Batting-Friendly"
         ? 0
         : pitchType == "Bowler-Friendly"
