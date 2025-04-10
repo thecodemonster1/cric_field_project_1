@@ -17,13 +17,14 @@ dependencies:
   tflite_flutter_helper: ^0.2.0
   percent_indicator: ^4.2.5
   fl_chart: ^0.70.2
-
-  # Firebase packages
   firebase_core: ^3.13.0
-  firebase_auth: ^5.5.2
-  cloud_firestore: ^5.6.6
-  firebase_analytics: ^11.4.5
-  intl: ^0.20.2
+
+  # # Firebase packages
+  # firebase_core: ^3.13.0
+  # firebase_auth: ^5.5.2
+  # cloud_firestore: ^5.6.6
+  # firebase_analytics: ^11.4.5
+  # intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
