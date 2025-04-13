@@ -31,27 +31,34 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
       overRange: widget.inputData['overRange'],
       pitchType: widget.inputData['pitchType'],
       bowlerVariation: widget.inputData['bowlerVariation'],
+      bowlerArmType: widget.inputData['bowlerArmType'] ?? 'Right-Arm',
     );
 
-    final placements = result['placement'];
-    final shots = result['shotType'];
+    // Cast the dynamic lists to the proper types
+    final List<dynamic> placementsDynamic =
+        result['placement'] as List<dynamic>;
+    final List<dynamic> shotsDynamic = result['shotType'] as List<dynamic>;
+    final int accuracy = result['accuracy'] as int;
 
     final fieldingPositionMap = FieldPlacementService.fieldingPositionMap;
     final shotTypeMap = FieldPlacementService.shotTypeMap;
 
     setState(() {
-      topFielders = placements
-              ?.asMap()
-              .entries
-              .map((e) => {
-                    'name': fieldingPositionMap[e.value] ?? 'Unknown',
-                    'rank': e.key + 1
-                  })
-              .toList() ??
-          [];
+      // Convert the placements to the required format for topFielders
+      topFielders = placementsDynamic
+          .asMap()
+          .entries
+          .map((entry) => {
+                'name': fieldingPositionMap[entry.value] ?? 'Unknown',
+                'rank': entry.key + 1
+              })
+          .toList();
 
+      // Convert the shot types to strings
       topShotTypes =
-          shots?.map((i) => shotTypeMap[i] ?? 'Unknown').toList() ?? [];
+          shotsDynamic.map((i) => shotTypeMap[i as int] ?? 'Unknown').toList();
+
+      modelAccuracy = accuracy / 100.0; // Convert to decimal for display
     });
   }
 
@@ -171,6 +178,33 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.primary,
                                   ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Model Accuracy: ",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.grey600,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            AppColors.primary.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        "${(modelAccuracy * 100).round()}%",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 12),
                                 Expanded(

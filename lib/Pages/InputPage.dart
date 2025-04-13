@@ -15,6 +15,7 @@ class _InputPageState extends State<InputPage> {
   String overRange = 'Middle';
   String pitchType = 'Batting-Friendly';
   String bowlerVariation = 'Pace';
+  String bowlerArmType = 'Right-Arm'; // Add this line
 
   // Added batsman images for enhanced UI
   final Map<String, String> batsmanImages = {
@@ -350,6 +351,104 @@ class _InputPageState extends State<InputPage> {
                                 ),
                               ],
                             ),
+
+                            const SizedBox(height: 20),
+
+                            // Bowler Arm Type
+                            const Text(
+                              'Bowler Arm Type',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        bowlerArmType = 'Right-Arm';
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: bowlerArmType == 'Right-Arm'
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.arrow_forward,
+                                            color: bowlerArmType == 'Right-Arm'
+                                                ? Colors.white
+                                                : Colors.grey[700],
+                                            size: 32,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Right-Arm',
+                                            style: TextStyle(
+                                              color:
+                                                  bowlerArmType == 'Right-Arm'
+                                                      ? Colors.white
+                                                      : Colors.grey[700],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        bowlerArmType = 'Left-Arm';
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: bowlerArmType == 'Left-Arm'
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.arrow_back,
+                                            color: bowlerArmType == 'Left-Arm'
+                                                ? Colors.white
+                                                : Colors.grey[700],
+                                            size: 32,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Left-Arm',
+                                            style: TextStyle(
+                                              color: bowlerArmType == 'Left-Arm'
+                                                  ? Colors.white
+                                                  : Colors.grey[700],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -372,6 +471,7 @@ class _InputPageState extends State<InputPage> {
                                 'overRange': overRange,
                                 'pitchType': pitchType,
                                 'bowlerVariation': bowlerVariation,
+                                'bowlerArmType': bowlerArmType, // Add this line
                               },
                             );
                           }

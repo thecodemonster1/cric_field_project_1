@@ -18,6 +18,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String selectedBatsman = 'Babar Azam - Pakistan';
   Map<String, List<double>> shotDistributionData = {};
   bool isChartLoading = false;
+  int modelAccuracy = 0; // Add this line to store model accuracy
 
   // Available batsmen
   final List<String> availableBatsmen = [
@@ -59,57 +60,74 @@ class _DashboardPageState extends State<DashboardPage> {
       isChartLoading = true;
     });
 
-    // Set default values for prediction
-    const pitchTypes = ['Batting-Friendly', 'Bowler-Friendly', 'Neutral'];
-    const overRanges = ['Powerplay', 'Middle', 'Death'];
-    const variations = ['Pace', 'Spin'];
+    try {
+      // Initialize data structure
+      Map<String, List<double>> data = {};
+      for (final batsman in availableBatsmen) {
+        data[batsman] = List.filled(7, 0.0); // 7 shot types
+      }
 
-    // Initialize data structure
-    Map<String, List<double>> data = {};
-    for (final batsman in availableBatsmen) {
-      data[batsman] = List.filled(7, 0.0); // 7 shot types
-    }
+      int latestAccuracy = 0; // Track the latest model accuracy
 
-    // Get prediction data for each batsman with different combinations
-    for (final batsman in availableBatsmen) {
-      List<double> shotCounts = List.filled(7, 0.0);
+      // Get prediction data for each batsman with limited combinations
+      for (final batsman in availableBatsmen) {
+        List<double> shotCounts = List.filled(7, 0.0);
 
-      // Run predictions with various combinations
-      for (final pitch in pitchTypes) {
-        for (final overRange in overRanges) {
-          for (final variation in variations) {
-            final result = await FieldPlacementService.predictFieldPlacements(
-              batsman: batsman,
-              overRange: overRange,
-              pitchType: pitch,
-              bowlerVariation: variation,
-            );
+        // Just run one prediction per batsman to speed up loading
+        final result = await FieldPlacementService.predictFieldPlacements(
+          batsman: batsman,
+          overRange: 'Middle',
+          pitchType: 'Batting-Friendly',
+          bowlerVariation: 'Pace',
+          bowlerArmType: 'Right-Arm',
+        );
 
-            // Count shot types
-            if (result['shotType'] != null) {
-              for (final shotIndex in result['shotType']!) {
-                shotCounts[shotIndex] += 1;
-              }
+        // Store the latest accuracy
+        if (result.containsKey('accuracy')) {
+          latestAccuracy = result['accuracy'] as int;
+        }
+
+        // Process shot types
+        if (result.containsKey('shotType')) {
+          for (final shotIndex in result['shotType'] as List) {
+            if (shotIndex is int &&
+                shotIndex >= 0 &&
+                shotIndex < shotCounts.length) {
+              shotCounts[shotIndex] += 1;
             }
           }
         }
-      }
 
-      // Normalize the data (0-100%)
-      final total = shotCounts.reduce((a, b) => a + b);
-      if (total > 0) {
-        for (int i = 0; i < shotCounts.length; i++) {
-          shotCounts[i] = (shotCounts[i] / total) * 100;
+        // Normalize the data (0-100%)
+        double total = shotCounts.reduce((a, b) => a + b);
+        if (total > 0) {
+          for (int i = 0; i < shotCounts.length; i++) {
+            shotCounts[i] = (shotCounts[i] / total) * 100;
+          }
         }
+
+        data[batsman] = shotCounts;
       }
 
-      data[batsman] = shotCounts;
-    }
+      setState(() {
+        shotDistributionData = data;
+        modelAccuracy = latestAccuracy; // Update the model accuracy
+        isChartLoading = false;
 
-    setState(() {
-      shotDistributionData = data;
-      isChartLoading = false;
-    });
+        // Also update the first recentAnalysis with the new accuracy
+        if (recentAnalyses.isNotEmpty) {
+          recentAnalyses[0] = {
+            ...recentAnalyses[0],
+            'accuracy': modelAccuracy / 100.0,
+          };
+        }
+      });
+    } catch (e) {
+      print("Error loading model data: $e");
+      setState(() {
+        isChartLoading = false;
+      });
+    }
   }
 
   @override
@@ -279,7 +297,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 Expanded(
                   child: _buildStatCard(
                     'Accuracy',
-                    '20%',
+                    '$modelAccuracy%', // Use the dynamic model accuracy directly
                     Icons.check_circle,
                     AppColors.success,
                   ),
@@ -464,6 +482,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                 'overRange': 'Middle', // Default
                                 'pitchType': 'Batting-Friendly', // Default
                                 'bowlerVariation': 'Pace', // Default
+                                'bowlerArmType':
+                                    'Right-Arm', // Add default arm type
                               },
                             );
                           },
