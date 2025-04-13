@@ -300,7 +300,7 @@ class FieldPlacementService {
       return {
         'placement': top9Placement,
         'shotType': top3ShotType,
-        'accuracy': modelAccuracy,
+        'accuracy': (shotTypeConfidence * 100).round(),
       };
     } catch (e, stackTrace) {
       print("❌ Error during model prediction: $e");
