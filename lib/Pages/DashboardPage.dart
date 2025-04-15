@@ -1,13 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cric_field_project_1/theme/app_theme.dart';
-import 'package:cric_field_project_1/Pages/InputPage.dart';
 import 'package:cric_field_project_1/Services/Service.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final bool firebaseInitialized;
+  const DashboardPage({super.key, this.firebaseInitialized = false});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -133,7 +133,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    // Safe Firebase access
+    User? user;
+    // final user = FirebaseAuth.instance.currentUser;
+    if (widget.firebaseInitialized) {
+      try {
+        user = FirebaseAuth.instance.currentUser;
+      } catch (e) {
+        print("Error accessing Firebase Auth: $e");
+      }
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -154,8 +163,8 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
       body: _selectedIndex == 0
-          ? _buildMainDashboard(context)
-          : _buildProfile(context),
+          ? _buildMainDashboard(context, user)
+          : _buildProfile(context, user),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: AppColors.primary,
@@ -188,8 +197,10 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildMainDashboard(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+  Widget _buildMainDashboard(BuildContext context, User? user) {
+    // Don't call FirebaseAuth.instance directly here
+    // Instead, use the user parameter that is already safely obtained
+
     return RefreshIndicator(
       onRefresh: () async {
         setState(() {
@@ -667,7 +678,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildProfile(BuildContext context) {
+  Widget _buildProfile(BuildContext context, User? user) {
     // This is a placeholder for the profile section
     return Center(
       child: Column(
