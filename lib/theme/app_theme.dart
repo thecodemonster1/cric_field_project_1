@@ -31,6 +31,8 @@ class AppColors {
   static const Color success = Colors.green;
   static const Color warning = Colors.orange;
   static const Color info = Colors.blue;
+
+  // static const  googleRed = Colors.redAccent;
 }
 
 class AppTheme {
