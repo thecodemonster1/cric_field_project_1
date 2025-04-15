@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cric_field_project_1/theme/app_theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
   final bool firebaseInitialized;
@@ -27,6 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
         print("Error accessing Firebase Auth: $e");
       }
     }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -66,14 +68,14 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           // Analysis period setting
-          ListTile(
-            title: const Text('Default Analysis Period'),
-            subtitle: Text(selectedAnalysisPeriod),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              _showAnalysisPeriodDialog();
-            },
-          ),
+          // ListTile(
+          //   title: const Text('Default Analysis Period'),
+          //   subtitle: Text(selectedAnalysisPeriod),
+          //   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          //   onTap: () {
+          //     // _showAnalysisPeriodDialog();
+          //   },
+          // ),
 
           const Divider(),
 
@@ -82,6 +84,20 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             title: const Text('App Version'),
             subtitle: const Text('1.0.0 (Beta)'),
+          ),
+
+          ListTile(
+            title: const Text('Developer'),
+            subtitle: const Text('theCodeMonster'),
+            leading: Icon(Icons.code, color: AppColors.primary),
+          ),
+
+          ListTile(
+            title: const Text('GitHub'),
+            subtitle: const Text('Follow us for updates'),
+            leading: Icon(Icons.link, color: AppColors.primary),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => _launchUrl('https://github.com/thecodemonster1'),
           ),
 
           ListTile(
@@ -105,24 +121,32 @@ class _SettingsPageState extends State<SettingsPage> {
           if (widget.firebaseInitialized)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ElevatedButton(
-                onPressed: () async {
-                  try {
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/login', (route) => false);
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error signing out: $e')),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Sign Out'),
+              child: ElevatedButton.icon(
+              onPressed: widget.firebaseInitialized
+                  ? () async {
+                      try {
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/login',
+                          (route) => false, // Remove all previous routes
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error signing out: $e')),
+                        );
+                      }
+                    }
+                  : null,
+              icon: const Icon(Icons.logout),
+              label: const Text('Sign Out'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
+            ),
             ),
         ],
       ),
@@ -211,5 +235,14 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       },
     );
+  }
+
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch URL')),
+      );
+    }
   }
 }
