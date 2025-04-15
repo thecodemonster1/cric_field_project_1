@@ -133,9 +133,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Safe Firebase access
     User? user;
-    // final user = FirebaseAuth.instance.currentUser;
     if (widget.firebaseInitialized) {
       try {
         user = FirebaseAuth.instance.currentUser;
@@ -143,6 +141,7 @@ class _DashboardPageState extends State<DashboardPage> {
         print("Error accessing Firebase Auth: $e");
       }
     }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -170,9 +169,15 @@ class _DashboardPageState extends State<DashboardPage> {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.grey600,
         onTap: (index) {
+          // Just update the selected index, don't navigate
           setState(() {
             _selectedIndex = index;
           });
+
+          // If it's the third tab (New Analysis), navigate to input page
+          if (index == 2) {
+            Navigator.pushNamed(context, '/input');
+          }
         },
         items: const [
           BottomNavigationBarItem(
@@ -183,23 +188,18 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle),
+            label: 'New Analysis',
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
-        onPressed: () {
-          Navigator.pushNamed(context, '/input');
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('New Analysis'),
       ),
     );
   }
 
   Widget _buildMainDashboard(BuildContext context, User? user) {
-    // Don't call FirebaseAuth.instance directly here
-    // Instead, use the user parameter that is already safely obtained
+    // Get insights from shot distribution data
+    Map<String, dynamic> insights = _generateBatsmanInsights(selectedBatsman);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -398,115 +398,325 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // Recent analyses header
+            // NEW SECTION: Batsman Insights
+            Text(
+              'Batsman Insights',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildBatsmanInsightsCard(insights),
+
+            const SizedBox(height: 24),
+
+            // NEW SECTION: Playing Style Analysis
+            Text(
+              'Playing Style Analysis',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildPlayingStyleCard(insights),
+
+            const SizedBox(height: 24),
+
+            // NEW SECTION: Field Placement Strategy
+            Text(
+              'Field Placement Strategy',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildFieldPlacementCard(insights),
+
+            const SizedBox(height: 24),
+
+            // NEW SECTION: Match Situation Analysis
+            Text(
+              'Match Situation Analysis',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildMatchSituationCard(insights),
+
+            const SizedBox(height: 24),
+
+            // NEW SECTION: Bowling Strategy Recommendations
+            Text(
+              'Bowling Strategy',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildBowlingStrategyCard(insights),
+
+            const SizedBox(height: 24),
+
+            // NEW SECTION: Shot Improvement Suggestions
+            Text(
+              'Performance Enhancement',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildPerformanceEnhancementCard(insights),
+
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Map<String, dynamic> _generateBatsmanInsights(String batsmanName) {
+    final List<double> values =
+        shotDistributionData[batsmanName] ?? List.filled(7, 0.0);
+    const shots = [
+      'Missed',
+      'Drive',
+      'Cut',
+      'Glance',
+      'Sweep',
+      'Defend',
+      'Pull'
+    ];
+
+    int favoriteIndex = 0;
+    int leastFavoriteIndex = 0;
+    double maxValue = 0;
+    double minValue = double.infinity;
+
+    for (int i = 1; i < values.length; i++) {
+      if (values[i] > maxValue) {
+        maxValue = values[i];
+        favoriteIndex = i;
+      }
+
+      if (values[i] < minValue && values[i] > 0) {
+        minValue = values[i];
+        leastFavoriteIndex = i;
+      }
+    }
+
+    String playingStyle = "Balanced";
+    if (values[1] > 25 && values[6] > 25) {
+      playingStyle = "Aggressive";
+    } else if (values[5] > 30) {
+      playingStyle = "Defensive";
+    } else if (values[2] > 25) {
+      playingStyle = "Technical";
+    } else if (values[3] > 25 || values[4] > 25) {
+      playingStyle = "Wristy";
+    }
+
+    double aggressionScore = ((values[1] + values[2] + values[6]) / 3) * 1.3;
+    aggressionScore = aggressionScore.clamp(0, 100);
+
+    double technicalScore = ((values[2] + values[5]) / 2) * 1.2;
+    technicalScore = technicalScore.clamp(0, 100);
+
+    String strengthZone = "Off side";
+    if (values[3] > values[1] || values[4] > values[1]) {
+      strengthZone = "Leg side";
+    }
+
+    List<String> fieldRecommendations = [];
+    if (values[1] > 20) {
+      fieldRecommendations.add("Extra cover");
+    }
+    if (values[2] > 20) {
+      fieldRecommendations.add("Point");
+    }
+    if (values[3] > 20) {
+      fieldRecommendations.add("Square leg");
+    }
+    if (values[4] > 20) {
+      fieldRecommendations.add("Fine leg");
+    }
+    if (values[6] > 20) {
+      fieldRecommendations.add("Deep midwicket");
+    }
+
+    String weakness = shots[leastFavoriteIndex];
+    String weaknessExplanation =
+        "The batsman rarely plays the ${shots[leastFavoriteIndex].toLowerCase()} shot, suggesting potential discomfort when forced to play this way.";
+
+    return {
+      'favoriteShot': shots[favoriteIndex],
+      'favoriteShotPercentage': values[favoriteIndex],
+      'leastFavoriteShot': shots[leastFavoriteIndex],
+      'leastFavoriteShotPercentage': values[leastFavoriteIndex],
+      'playingStyle': playingStyle,
+      'aggressionScore': aggressionScore,
+      'technicalScore': technicalScore,
+      'strengthZone': strengthZone,
+      'fieldRecommendations': fieldRecommendations,
+      'weakness': weakness,
+      'weaknessExplanation': weaknessExplanation,
+    };
+  }
+
+  Widget _buildBatsmanInsightsCard(Map<String, dynamic> insights) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Recent Analyses',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Icon(Icons.insights, color: AppColors.primary),
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'View All',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                const SizedBox(width: 8),
+                Text(
+                  'Insights',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-
+            const SizedBox(height: 16),
+            Text(
+              'Favorite Shot: ${insights['favoriteShot']} (${insights['favoriteShotPercentage'].toStringAsFixed(1)}%)',
+              style: TextStyle(fontSize: 14),
+            ),
             const SizedBox(height: 8),
+            Text(
+              'Least Favorite Shot: ${insights['leastFavoriteShot']} (${insights['leastFavoriteShotPercentage'].toStringAsFixed(1)}%)',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Weakness: ${insights['weakness']}',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Explanation: ${insights['weaknessExplanation']}',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // Recent analyses list
-            isDataLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: recentAnalyses.length,
-                    itemBuilder: (context, index) {
-                      final analysis = recentAnalyses[index];
-
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(12),
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.primary.withOpacity(0.1),
-                            child: Icon(
-                              Icons.sports_cricket,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          title: Text(
-                            analysis['batsman'],
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text('Top shot: ${analysis['topShot']}'),
-                              const SizedBox(height: 8),
-                              LinearPercentIndicator(
-                                lineHeight: 6,
-                                percent: analysis['accuracy'],
-                                backgroundColor: AppColors.grey200,
-                                progressColor: AppColors.primary,
-                                barRadius: const Radius.circular(8),
-                              ),
-                            ],
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                analysis['date'],
-                                style: TextStyle(
-                                  color: AppColors.grey600,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: AppColors.grey600,
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            // Navigate to WagonWheel with pre-filled data
-                            Navigator.pushNamed(
-                              context,
-                              '/wagonWheel',
-                              arguments: {
-                                'batsman': analysis['batsman'],
-                                'overRange': 'Middle', // Default
-                                'pitchType': 'Batting-Friendly', // Default
-                                'bowlerVariation': 'Pace', // Default
-                                'bowlerArmType':
-                                    'Right-Arm', // Add default arm type
-                              },
-                            );
-                          },
-                        ),
-                      );
-                    },
+  Widget _buildPlayingStyleCard(Map<String, dynamic> insights) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Icon(Icons.style, color: AppColors.secondary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Playing Style',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Style: ${insights['playingStyle']}',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aggression Score: ${insights['aggressionScore'].toStringAsFixed(1)}%',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Technical Proficiency: ${insights['technicalScore'].toStringAsFixed(1)}%',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldPlacementCard(Map<String, dynamic> insights) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.place, color: AppColors.success),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Field Placement',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Strength Zone: ${insights['strengthZone']}',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Recommendations:',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            ...insights['fieldRecommendations']
+                .map<Widget>((recommendation) => Text('- $recommendation'))
+                .toList(),
           ],
         ),
       ),
@@ -575,7 +785,6 @@ class _DashboardPageState extends State<DashboardPage> {
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
-            // tooltipColor: Colors.black.withOpacity(0.8),
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               const shots = [
                 'Missed',
@@ -678,35 +887,345 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget _buildMatchSituationCard(Map<String, dynamic> insights) {
+    final String batsmanName = selectedBatsman.split(' - ')[0];
+
+    // Generate dynamic match situation insights
+    Map<String, String> situations = {
+      'Power Play': insights['aggressionScore'] > 70
+          ? 'Excellent performer, attacks from the start'
+          : 'Prefers to build innings, less aggressive initially',
+      'Middle Overs': insights['technicalScore'] > 70
+          ? 'Rotates strike well, maintains momentum'
+          : 'May struggle to maintain scoring rate',
+      'Death Overs':
+          (insights['aggressionScore'] + insights['technicalScore']) / 2 > 70
+              ? 'Strong finisher, can accelerate quickly'
+              : 'Can struggle under pressure to increase scoring rate',
+    };
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.sports_cricket, color: AppColors.primary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Match Phases',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'How $batsmanName performs in different match situations:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...situations.entries.map((entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entry.key,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        entry.value,
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBowlingStrategyCard(Map<String, dynamic> insights) {
+    final String batsmanName = selectedBatsman.split(' - ')[0];
+
+    // Generate dynamic bowling strategies based on insights
+    List<Map<String, String>> strategies = [
+      {
+        'type': 'Pace Bowling',
+        'strategy': insights['leastFavoriteShot'] == 'Pull'
+            ? 'Use short-pitched deliveries aiming at the body'
+            : 'Bowl full and straight, targeting the stumps',
+      },
+      {
+        'type': 'Spin Bowling',
+        'strategy': insights['leastFavoriteShot'] == 'Sweep'
+            ? 'Bowl slightly quicker and flatter to prevent easy sweeping'
+            : 'Flight the ball and aim for turn outside off stump',
+      },
+      {
+        'type': 'Field Setting',
+        'strategy':
+            'Place fielders at ${insights['fieldRecommendations'].join(', ')}',
+      },
+    ];
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.sports, color: AppColors.secondary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Bowling Strategies',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Recommended approaches against $batsmanName:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...strategies.map((strategy) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        strategy['type']!,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        strategy['strategy']!,
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPerformanceEnhancementCard(Map<String, dynamic> insights) {
+    final String batsmanName = selectedBatsman.split(' - ')[0];
+
+    // Generate improvement suggestions based on insights
+    List<Map<String, String>> improvements = [
+      {
+        'area': 'Technical Improvement',
+        'suggestion':
+            'Focus on ${insights['leastFavoriteShot']} shots in training sessions',
+      },
+      {
+        'area': 'Scoring Rate',
+        'suggestion': insights['aggressionScore'] < 70
+            ? 'Practice aggressive shots against ${insights['strengthZone'] == "Off side" ? "leg side" : "off side"} bowling'
+            : 'Work on defense and shot selection for longer innings',
+      },
+      {
+        'area': 'Situational Awareness',
+        'suggestion':
+            'Practice different scoring approaches for power play, middle overs, and death overs',
+      },
+    ];
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.trending_up, color: AppColors.success),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Development Areas',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Suggested improvement areas for $batsmanName:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...improvements.map((improvement) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        improvement['area']!,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        improvement['suggestion']!,
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildProfile(BuildContext context, User? user) {
-    // This is a placeholder for the profile section
-    return Center(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const SizedBox(height: 20),
           CircleAvatar(
-            radius: 50,
+            radius: 60,
             backgroundColor: AppColors.primary,
             child: Icon(
               Icons.person,
-              size: 50,
+              size: 60,
               color: AppColors.white,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
-            'Coach Profile',
-            style: TextStyle(
+            user?.email ?? 'Guest User',
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Cricket Team Analyst',
+            'Cricket Analyst',
             style: TextStyle(
-              color: AppColors.grey600,
               fontSize: 16,
+              color: AppColors.grey600,
+            ),
+          ),
+          const SizedBox(height: 30),
+          // Account Information section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.grey100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Account Information',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.email),
+            title: const Text('Email'),
+            subtitle: Text(user?.email ?? 'Not available'),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.calendar_today),
+            title: const Text('Joined'),
+            subtitle: Text(
+                user?.metadata.creationTime?.toString().split(' ')[0] ??
+                    'Not available'),
+          ),
+          const SizedBox(height: 30),
+          ElevatedButton.icon(
+            onPressed: widget.firebaseInitialized
+                ? () async {
+                    try {
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false, // Remove all previous routes
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error signing out: $e')),
+                      );
+                    }
+                  }
+                : null,
+            icon: const Icon(Icons.logout),
+            label: const Text('Sign Out'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
         ],
