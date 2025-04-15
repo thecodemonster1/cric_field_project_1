@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "622996882555",
+    "project_id": "cricfieldanlyzer",
+    "storage_bucket": "cricfieldanlyzer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:622996882555:android:cb48b9b1dbcb9acbfa0ede",
+        "android_client_info": {
+          "package_name": "com.example.cric_field_project_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOKz4zO1VUWco9QG61yKM1E8ZspjAMYJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

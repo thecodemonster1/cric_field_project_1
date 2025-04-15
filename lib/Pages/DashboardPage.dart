@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cric_field_project_1/theme/app_theme.dart';
 import 'package:cric_field_project_1/Pages/InputPage.dart';
@@ -132,6 +133,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -145,7 +147,9 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
           ),
         ],
       ),
@@ -185,6 +189,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildMainDashboard(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
     return RefreshIndicator(
       onRefresh: () async {
         setState(() {
@@ -215,7 +220,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Welcome back, Coach!',
+                          'Welcome, ${user?.email ?? 'Guest'}!',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
