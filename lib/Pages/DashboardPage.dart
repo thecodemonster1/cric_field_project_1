@@ -398,19 +398,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Batsman Insights
-            Text(
-              'Batsman Insights',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildBatsmanInsightsCard(insights),
-
-            const SizedBox(height: 24),
-
             // NEW SECTION: Playing Style Analysis
             Text(
               'Playing Style Analysis',
@@ -473,6 +460,20 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const SizedBox(height: 16),
             _buildPerformanceEnhancementCard(insights),
+
+            const SizedBox(height: 24),
+
+            // NEW SECTION: Batsman Insights
+
+            Text(
+              'Batsman Insights',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildBatsmanInsightsCard(insights),
 
             const SizedBox(height: 24),
           ],
