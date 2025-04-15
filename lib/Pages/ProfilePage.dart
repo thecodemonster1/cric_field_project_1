@@ -96,7 +96,11 @@ class ProfilePage extends StatelessWidget {
                   ? () async {
                       try {
                         await FirebaseAuth.instance.signOut();
-                        Navigator.pushReplacementNamed(context, '/login');
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/login',
+                          (route) => false, // Remove all previous routes
+                        );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Error signing out: $e')),
