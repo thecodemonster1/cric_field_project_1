@@ -60,13 +60,13 @@ class FieldPlacementService {
     try {
       // Load the shot placement model
       _placementInterpreter = await Interpreter.fromAsset(
-          'model/enhanced_shot_placement_model.tflite');
+          'models/enhanced_shot_placement_model.tflite');
       _arePlacementModelsLoaded = true;
       print("✅ TFLite shot placement model loaded.");
 
       // Load the shot type model
       _shotTypeInterpreter =
-          await Interpreter.fromAsset('model/enhanced_shot_type_model.tflite');
+          await Interpreter.fromAsset('models/enhanced_shot_type_model.tflite');
       _areShotTypeModelsLoaded = true;
       print("✅ TFLite shot type model loaded.");
     } catch (e) {

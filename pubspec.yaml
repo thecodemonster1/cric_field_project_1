@@ -37,5 +37,5 @@ flutter:
   uses-material-design: true
   assets:
     # Update this section to include the new model files
-    - assets/model/enhanced_shot_placement_model.tflite
-    - assets/model/enhanced_shot_type_model.tflite
+    - assets/models/enhanced_shot_placement_model.tflite
+    - assets/models/enhanced_shot_type_model.tflite
