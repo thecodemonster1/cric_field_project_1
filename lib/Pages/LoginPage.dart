@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cric_field_project_1/Pages/RegisterPage.dart';
 import 'package:cric_field_project_1/theme/app_theme.dart'; // Import app theme
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
