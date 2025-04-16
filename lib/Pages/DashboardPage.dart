@@ -26,27 +26,6 @@ class _DashboardPageState extends State<DashboardPage> {
     'Jos Buttler - England',
   ];
 
-  // Mock recent analyses data
-  final List<Map<String, dynamic>> recentAnalyses = [
-    {
-      'batsman': 'Babar Azam - Pakistan',
-      'date': '3 Mar 2023',
-      'topShot': 'Drive',
-      'accuracy': 0.86,
-    },
-    {
-      'batsman': 'Jos Buttler - England',
-      'date': '27 Feb 2023',
-      'topShot': 'Pull',
-      'accuracy': 0.78,
-    },
-    {
-      'batsman': 'Babar Azam - Pakistan',
-      'date': '20 Feb 2023',
-      'topShot': 'Cut',
-      'accuracy': 0.72,
-    },
-  ];
 
   @override
   void initState() {
@@ -114,13 +93,7 @@ class _DashboardPageState extends State<DashboardPage> {
         modelAccuracy = latestAccuracy; // Update the model accuracy
         isChartLoading = false;
 
-        // Also update the first recentAnalysis with the new accuracy
-        if (recentAnalyses.isNotEmpty) {
-          recentAnalyses[0] = {
-            ...recentAnalyses[0],
-            'accuracy': modelAccuracy / 100.0,
-          };
-        }
+        
       });
     } catch (e) {
       print("Error loading model data: $e");
@@ -188,8 +161,8 @@ class _DashboardPageState extends State<DashboardPage> {
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle),
-            label: 'New Analysis',
+            icon: Icon(Icons.sports_cricket),
+            label: 'Analysis',
           ),
         ],
       ),
