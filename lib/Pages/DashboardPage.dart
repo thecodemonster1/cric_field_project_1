@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cric_field_project_1/theme/app_theme.dart';
 import 'package:cric_field_project_1/Services/Service.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class DashboardPage extends StatefulWidget {
