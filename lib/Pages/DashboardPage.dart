@@ -397,7 +397,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Playing Style Analysis
+            //  SECTION: Playing Style Analysis
             Text(
               'Playing Style Analysis',
               style: TextStyle(
@@ -410,7 +410,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Field Placement Strategy
+            //  SECTION: Field Placement Strategy
             Text(
               'Field Placement Strategy',
               style: TextStyle(
@@ -423,7 +423,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Match Situation Analysis
+            //  SECTION: Match Situation Analysis
             Text(
               'Match Situation Analysis',
               style: TextStyle(
@@ -436,7 +436,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Bowling Strategy Recommendations
+            //  SECTION: Bowling Strategy Recommendations
             Text(
               'Bowling Strategy',
               style: TextStyle(
@@ -449,7 +449,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Shot Improvement Suggestions
+            //  SECTION: Shot Improvement Suggestions
             Text(
               'Performance Enhancement',
               style: TextStyle(
@@ -462,7 +462,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             const SizedBox(height: 24),
 
-            // NEW SECTION: Batsman Insights
+            //  SECTION: Batsman Insights
 
             Text(
               'Batsman Insights',
