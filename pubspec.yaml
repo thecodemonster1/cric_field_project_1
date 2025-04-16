@@ -39,3 +39,7 @@ flutter:
     # Update this section to include the new model files
     - assets/models/enhanced_shot_placement_model.tflite
     - assets/models/enhanced_shot_type_model.tflite
+    # - assets/images/CricField_Logo.png
+    - assets/images/CricField_Logo_BG.png
+    - assets/images/CricField_Logo_BG2.jpg
+    - assets/images/CricField_Logo_BG2.png
