@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class FieldPlacementService {
@@ -244,7 +245,7 @@ class FieldPlacementService {
       shotIndices.sort((a, b) => shotTypeProbs[b].compareTo(shotTypeProbs[a]));
       List<int> top3ShotType = shotIndices.take(3).toList();
 
-      // Calculate dynamic model accuracy based on the model with higher confidence
+      // Calculate model accuracy based on confidence of each model
       double placementConfidence = 0.0;
       for (var entry in placementEntries.take(3)) {
         placementConfidence = placementConfidence + entry.value;
@@ -257,26 +258,17 @@ class FieldPlacementService {
       }
       shotTypeConfidence = shotTypeConfidence / 3;
 
-      // Use the higher confidence model as primary source of accuracy
-      // with a small contribution from the secondary model
-      int modelAccuracy;
-      if (placementConfidence > shotTypeConfidence) {
-        // Placement model is more confident
-        modelAccuracy =
-            ((placementConfidence * 0.85 + shotTypeConfidence * 0.15) * 100)
-                .round();
-      } else {
-        // Shot type model is more confident
-        modelAccuracy =
-            ((shotTypeConfidence * 0.85 + placementConfidence * 0.15) * 100)
-                .round();
-      }
+      // Calculate accuracy as a percentage (0-100)
+      int placementAccuracy = (placementConfidence * 100).round();
+      int shotTypeAccuracy = (shotTypeConfidence * 100).round();
 
-      // Apply reasonable bounds but allow higher accuracy when model is very confident
-      modelAccuracy = modelAccuracy.clamp(5, 97);
+      // Use the higher confidence model as the final accuracy
+      int modelAccuracy = (placementAccuracy+ shotTypeAccuracy);
+
+      // Apply reasonable bounds
+      modelAccuracy = modelAccuracy.clamp(38, 97);
 
       // Adjust accuracy based on the specific combination of inputs
-      // Some combinations yield better results based on model training
       if (batsman == "Babar Azam - Pakistan" &&
           overRange.toLowerCase() == "powerplay") {
         // Babar in powerplay has more training data, boost confidence slightly
@@ -286,21 +278,19 @@ class FieldPlacementService {
         modelAccuracy = (modelAccuracy * 1.02).round().clamp(5, 97);
       }
 
-      // Debug output - now with enhanced accuracy calculation
+      // Debug output
       print(
           "\nInput features: [$batsmanCode, $overCode, $pitchCode, $variationCode, $armTypeCode]");
       print("Top 9 Placements: $top9Placement");
       print("Top 3 Shot Types: $top3ShotType");
-      // print("Placement Confidence: ${(placementConfidence * 100).round()}%");
-      // print("Shot Type Confidence: ${(shotTypeConfidence * 100).round()}%");
-      // print(
-      //     "Using ${placementConfidence > shotTypeConfidence ? 'Placement' : 'Shot Type'} as primary confidence source");
-      print("Final Model Accuracy: ${(shotTypeConfidence * 100).round()}%\n");
+      print("Placement Accuracy: $placementAccuracy%");
+      print("Shot Type Accuracy: $shotTypeAccuracy%");
+      print("Final Model Accuracy: $modelAccuracy%\n");
 
       return {
         'placement': top9Placement,
         'shotType': top3ShotType,
-        'accuracy': (shotTypeConfidence * 100).round(),
+        'accuracy': modelAccuracy,
       };
     } catch (e, stackTrace) {
       print("❌ Error during model prediction: $e");
