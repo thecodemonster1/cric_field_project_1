@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cric_field_project_1/Pages/RegisterPage.dart';
-import 'package:cric_field_project_1/theme/app_theme.dart'; // Import app theme
+import 'package:cric_field_project_1/theme/app_theme.dart'; // app theme
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart'; // Google Sign In
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -184,6 +185,63 @@ class _LoginPageState extends State<LoginPage>
             _isLoading = false;
           });
         }
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Initialize Google Sign In
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      // If user cancels the sign-in flow
+      if (googleUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Obtain auth details from request
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Create credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in with Firebase using the Google credential
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      if (mounted) {
+        // Track login analytics
+        _logAnalyticsEvent('login_success', {
+          'user_id': userCredential.user?.uid,
+          'login_method': 'google',
+        });
+
+        // Navigate to home page
+        Navigator.of(context).pushReplacementNamed(
+          '/',
+          arguments: {'user': userCredential.user},
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('Google Sign In failed: ${e.toString()}');
+        debugPrint('Google Sign In error: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -609,19 +667,35 @@ class _LoginPageState extends State<LoginPage>
                           const SizedBox(height: 24),
 
                           // Social login buttons
-                          _buildSocialLoginButton(
-                            icon: Icons.g_mobiledata_rounded,
-                            color: Colors.red,
-                            label: 'Continue with Google',
-                            onPressed: () {
-                              // Implement Google Sign In
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Google Sign In coming soon'),
-                                  behavior: SnackBarBehavior.floating,
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _signInWithGoogle,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black87,
+                              minimumSize: const Size(double.infinity, 48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              elevation: 1,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/images/Google_logo.png',
+                                  height: 24,
                                 ),
-                              );
-                            },
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 16),
