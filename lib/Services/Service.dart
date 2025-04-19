@@ -283,8 +283,6 @@ class FieldPlacementService {
           "\nInput features: [$batsmanCode, $overCode, $pitchCode, $variationCode, $armTypeCode]");
       print("Top 9 Placements: $top9Placement");
       print("Top 3 Shot Types: $top3ShotType");
-      print("Placement Accuracy: $placementAccuracy%");
-      print("Shot Type Accuracy: $shotTypeAccuracy%");
       print("Final Model Accuracy: $modelAccuracy%\n");
 
       return {
