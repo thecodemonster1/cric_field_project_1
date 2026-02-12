@@ -10,7 +10,7 @@ apply plugin: 'com.google.gms.google-services'
 android {
     namespace = "com.example.cric_field_project_1"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion // Commented out to avoid NDK issues
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
