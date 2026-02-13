@@ -1,1 +1,41 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"cricfieldanlyzer","appId":"1:622996882555:android:cb48b9b1dbcb9acbfa0ede","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"cricfieldanlyzer","appId":"1:622996882555:ios:458c7883f788e6bafa0ede","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"cricfieldanlyzer","appId":"1:622996882555:ios:458c7883f788e6bafa0ede","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"cricfieldanlyzer","configurations":{"android":"1:622996882555:android:cb48b9b1dbcb9acbfa0ede","ios":"1:622996882555:ios:458c7883f788e6bafa0ede","macos":"1:622996882555:ios:458c7883f788e6bafa0ede","web":"1:622996882555:web:26d27fc1b127b8e8fa0ede","windows":"1:622996882555:web:3f29c3deab3b10cafa0ede"}}}}}}
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "cricfieldanlyzer",
+                    "appId": "1:622996882555:android:cb48b9b1dbcb9acbfa0ede",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "cricfieldanlyzer",
+                    "appId": "1:622996882555:ios:458c7883f788e6bafa0ede",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "macos": {
+                "default": {
+                    "projectId": "cricfieldanlyzer",
+                    "appId": "1:622996882555:ios:458c7883f788e6bafa0ede",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "macos/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "cricfieldanlyzer",
+                    "configurations": {
+                        "android": "1:622996882555:android:cb48b9b1dbcb9acbfa0ede",
+                        "ios": "1:622996882555:ios:458c7883f788e6bafa0ede",
+                        "macos": "1:622996882555:ios:458c7883f788e6bafa0ede",
+                        "web": "1:622996882555:web:26d27fc1b127b8e8fa0ede",
+                        "windows": "1:622996882555:web:3f29c3deab3b10cafa0ede"
+                    }
+                }
+            }
+        }
+    }
+}
