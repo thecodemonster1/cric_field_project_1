@@ -60,13 +60,13 @@ class FieldPlacementService {
     try {
       // Load the shot placement model
       _placementInterpreter = await Interpreter.fromAsset(
-          'models/enhanced_shot_placement_model.tflite');
+          'assets/models/enhanced_shot_placement_model.tflite');
       _arePlacementModelsLoaded = true;
       print("✅ TFLite shot placement model loaded.");
 
       // Load the shot type model
-      _shotTypeInterpreter =
-          await Interpreter.fromAsset('models/enhanced_shot_type_model.tflite');
+      _shotTypeInterpreter = await Interpreter.fromAsset(
+          'assets/models/enhanced_shot_type_model.tflite');
       _areShotTypeModelsLoaded = true;
       print("✅ TFLite shot type model loaded.");
     } catch (e) {
@@ -262,7 +262,7 @@ class FieldPlacementService {
       int shotTypeAccuracy = (shotTypeConfidence * 100).round();
 
       // Use the higher confidence model as the final accuracy
-      int modelAccuracy = (placementAccuracy+ shotTypeAccuracy);
+      int modelAccuracy = (placementAccuracy + shotTypeAccuracy);
 
       // Apply reasonable bounds
       modelAccuracy = modelAccuracy.clamp(38, 97);

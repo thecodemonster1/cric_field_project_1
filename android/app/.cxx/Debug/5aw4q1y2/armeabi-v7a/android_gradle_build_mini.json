@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/mohamedazwar/development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/mohamedazwar/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/mohamedazwar/Desktop/Amhr/My_Flutter/cric_field_project_1/android/app/.cxx/Debug/5aw4q1y2/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/mohamedazwar/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/mohamedazwar/Desktop/Amhr/My_Flutter/cric_field_project_1/android/app/.cxx/Debug/5aw4q1y2/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

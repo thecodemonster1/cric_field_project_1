@@ -1,0 +1,2 @@
+/Users/mohamedazwar/Desktop/Amhr/My_Flutter/cric_field_project_1/android/app/.cxx/RelWithDebInfo/6c526q5m/x86_64/CMakeFiles/edit_cache.dir
+/Users/mohamedazwar/Desktop/Amhr/My_Flutter/cric_field_project_1/android/app/.cxx/RelWithDebInfo/6c526q5m/x86_64/CMakeFiles/rebuild_cache.dir
