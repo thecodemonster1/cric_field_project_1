@@ -182,7 +182,7 @@ class _InputPageState extends State<InputPage> {
                               ),
                               const SizedBox(height: 16),
                               DropdownButtonFormField<String>(
-                                value: batsman,
+                                initialValue: batsman,
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: Colors.grey[100],
@@ -287,7 +287,7 @@ class _InputPageState extends State<InputPage> {
                               ),
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
-                                value: pitchType,
+                                initialValue: pitchType,
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: Colors.grey[100],

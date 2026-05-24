@@ -149,7 +149,7 @@ class _WagonWheelPageState extends State<WagonWheelPage> {
                       showFielderNames = value;
                     });
                   },
-                  activeColor: Colors.green[700],
+                  activeThumbColor: Colors.green[700],
                 ),
               ],
             ),

@@ -46,7 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('Notifications'),
             subtitle: const Text('Enable push notifications'),
             value: notificationsEnabled,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             onChanged: (value) {
               setState(() {
                 notificationsEnabled = value;
@@ -59,7 +59,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('Dark Mode'),
             subtitle: const Text('Enable dark theme'),
             value: darkModeEnabled,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             onChanged: (value) {
               setState(() {
                 darkModeEnabled = value;

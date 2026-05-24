@@ -77,7 +77,7 @@ class ProfilePage extends StatelessWidget {
               trailing: Switch(
                 value: true,
                 onChanged: (value) {},
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ),
             const Divider(),
@@ -87,7 +87,7 @@ class ProfilePage extends StatelessWidget {
               trailing: Switch(
                 value: false,
                 onChanged: (value) {},
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ),
             const SizedBox(height: 30),

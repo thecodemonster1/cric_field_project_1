@@ -14,7 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   tflite_flutter: 0.11.0
   percent_indicator: ^4.2.5
-  fl_chart: ^0.70.2
+  fl_chart: ^0.69.0
   shared_preferences:
   url_launcher:
   google_sign_in:
